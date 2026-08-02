@@ -89,7 +89,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
               <li>
                 <button type="button" class="hero__quick-item" data-book-open data-service={s.id}>
                   <span class="hero__quick-name">{s.name}</span>
-                  <span class="hero__quick-price data data-price">{fmt(s.price)} ₽</span>
+                  <span class="hero__quick-price data">{fmt(s.price)} ₽</span>
                   <span class="arrow-btn hero__quick-arrow" aria-hidden="true">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
                       <path d="M7 17 17 7M9 7h8v8" />
@@ -506,7 +506,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   .hero__trust-label {
     font-family: var(--font-data);
     font-size: 0.625rem;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--track-label);
     text-transform: uppercase;
     color: var(--ink-soft);
   }

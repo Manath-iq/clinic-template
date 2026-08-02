@@ -97,7 +97,7 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
   .rev__stars {
     margin-top: 10px;
     color: var(--pulse);
-    letter-spacing: 0.14em;
+    letter-spacing: var(--track-label);
     font-size: 1rem;
   }
 
@@ -189,7 +189,7 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
     flex: none;
     color: var(--pulse);
     font-size: 0.8125rem;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--track-label);
   }
 
   .rev__text {

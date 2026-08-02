@@ -58,7 +58,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
                   {s.note && <span class="price__note t-xs">{s.note}</span>}
                 </div>
                 <span class="price__cell-time data t-xs">{s.duration} мин</span>
-                <span class="price__cell-price data data-price">{fmt(s.price)} ₽</span>
+                <span class="price__cell-price data">{fmt(s.price)} ₽</span>
                 <button
                   type="button"
                   class="price__cell-book"

@@ -29,10 +29,22 @@
   --hairline-dark: color-mix(in oklab, #ffffff 14%, transparent);
   --paper-warm: color-mix(in oklab, var(--paper) 92%, #ffffff);
 
-  /* Типографика */
+  /* Типографика.
+     --font-data — это роль («данные и служебные метки»), а не отдельная
+     гарнитура. Раньше роль держал JetBrains Mono, но шрифт из редактора кода
+     тянул на себе почти всю мелкую типографику сайта — верхнюю строку шапки,
+     телефон, цены, время слотов, все eyebrow и подписи полей. В таком объёме
+     он читается «айтишно», а не «технологично». Теперь роль исполняет тот же
+     гротеск в табличном режиме: цифры по-прежнему выстраиваются в колонки
+     (tnum есть в латинских сабсетах Onest и Golos Text, откуда и берутся
+     цифры), но страница говорит одним голосом. */
   --font-display: 'Onest', system-ui, -apple-system, sans-serif;
   --font-body: 'Golos Text', system-ui, -apple-system, sans-serif;
-  --font-data: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --font-data: var(--font-body);
+
+  /* Трекинг прописных микро-меток. У моноширинного 0.1–0.14em держали строку;
+     у гротеска на тех же значениях метка рассыпается — набрано на глаз. */
+  --track-label: 0.06em;
 
   /* Шкала: 64 / 44 / 32 / 24 / 20 / 17 / 15 / 13 */
   --t-display: clamp(2.125rem, 0.6rem + 6.6vw, 5.25rem);
@@ -123,7 +135,6 @@ body {
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.6;
-  font-feature-settings: 'ss01';
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -231,25 +242,26 @@ canvas {
   font-size: var(--t-xs);
 }
 
-/* Данные прибора: цены, минуты, стаж, номера */
+/* Данные прибора: цены, минуты, стаж, номера.
+   tabular-nums выравнивает цифры в колонки — ради этого раньше и держали
+   моноширинный; в Onest и Golos Text эта фича есть, так что колонки в прайсе
+   и строке доверия стоят ровно и без отдельной гарнитуры. */
 .data {
   font-family: var(--font-data);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
-/* Разрядный пробел в моноширинном шрифте шириной с цифру — поджимаем,
-   иначе «1 600» читается как два отдельных числа */
-.data-price {
-  word-spacing: -0.34em;
-}
+/* Класс .data-price удалён вместе с моноширинным: он поджимал разрядный пробел
+   (в моно пробел шириной с цифру, и «1 600» распадалось на два числа).
+   Пропорциональному гротеску костыль не нужен. */
 
 /* Мелкая служебная метка — язык журнальной сетки из референсов */
 .eyebrow {
   font-family: var(--font-data);
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--ink-soft);
 }
@@ -273,7 +285,7 @@ canvas {
 .section-index {
   font-family: var(--font-data);
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--track-label);
   color: var(--ink-soft);
   display: flex;
   align-items: center;
@@ -576,7 +588,7 @@ canvas {
   margin-bottom: 7px;
   font-family: var(--font-data);
   font-size: 0.625rem;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--ink-soft);
 }
