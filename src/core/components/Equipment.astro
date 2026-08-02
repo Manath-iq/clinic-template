@@ -99,12 +99,14 @@ const { equipment } = content;
     background: color-mix(in oklab, #ffffff 8%, transparent);
   }
 
+  /* Плашка подсвечена белым на 8%, то есть фон под подписью светлее самой
+     секции — общего --on-dark-soft здесь не хватает до 4.5:1 */
   .equip__spec dt {
     font-family: var(--font-data);
     font-size: 0.625rem;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
-    color: var(--on-dark-soft);
+    color: color-mix(in oklab, var(--paper) 78%, transparent);
   }
 
   .equip__spec dd {
