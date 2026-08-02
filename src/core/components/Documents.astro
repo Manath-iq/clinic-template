@@ -141,8 +141,10 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     color: color-mix(in oklab, var(--paper) 58%, transparent);
   }
 
+  /* На тёмной плитке тёплый акцент осветляем от токена, а не хардкодим:
+     раньше здесь стоял #ff8c6e мимо палитры */
   .docs2__tax .docs2__tax-final {
-    color: #ff8c6e;
+    color: color-mix(in oklab, var(--doppler) 72%, #ffffff);
   }
 
   .docs2__tax .docs2__tax-back {
@@ -196,8 +198,10 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     text-decoration: line-through;
   }
 
+  /* 22px при weight 500 — по WCAG это ещё не «крупный текст» (нужно 24px
+     или 18.66px полужирным), поэтому тон текстовый, а не дисплейный */
   .docs2__tax-final {
-    color: var(--doppler);
+    color: var(--doppler-text);
   }
 
   .docs2__tax-back {
