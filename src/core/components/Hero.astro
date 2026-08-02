@@ -30,19 +30,20 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 
     {/* ─── Bento: фото-плитка + панель записи ──────────────────── */}
     <div class="hero__bento">
-      {/* Крупная плитка с объектом и сканом */}
+      {/* Крупная плитка: кадр из кабинета, поверх — чип, лид и CTA */}
       <div class="hero__stage">
-        <div class="hero__art decor" aria-hidden="true">
-          <div class="hero__scan"><ScanSector /></div>
+        <div class="hero__media">
           <img
-            class="hero__object"
-            src={url('/img/hero-probe.webp')}
-            alt=""
-            width="601"
-            height="906"
+            src={url('/img/hero-room.webp')}
+            alt="Врач ультразвуковой диагностики у аппарата Mindray DC-70 в кабинете центра «АЯЗ», Нижнекамск"
+            width="1440"
+            height="960"
             fetchpriority="high"
             decoding="async"
           />
+          {/* Сектор-скан остаётся фирменным мотивом, но уже как тонкий слой
+              поверх снимка, а не самостоятельный объект */}
+          <div class="hero__scan decor" aria-hidden="true"><ScanSector /></div>
         </div>
 
         <div class="hero__stage-top">
@@ -202,7 +203,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     min-height: clamp(440px, 52vw, 560px);
     padding: 20px;
     border-radius: var(--r-lg);
-    background: linear-gradient(150deg, #ffffff 0%, #e8eeef 58%, #dfe8ea 100%);
+    background: var(--ink);
     box-shadow: var(--shadow-tile);
     overflow: hidden;
     isolation: isolate;
@@ -214,89 +215,88 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     }
   }
 
-  .hero__art {
+  /* Фото занимает всю плитку, текст ложится поверх */
+  .hero__media {
     position: absolute;
-    top: -20%;
-    right: -26%;
-    width: min(74%, 400px);
-    pointer-events: none;
+    inset: 0;
     z-index: -1;
   }
 
+  .hero__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 38%;
+  }
+
+  /* Мотив сектора — тонкой графикой поверх кадра, в правом верхнем углу */
+  .hero__scan {
+    position: absolute;
+    top: -26%;
+    right: -18%;
+    width: min(76%, 420px);
+    opacity: 0.5;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
   @media (min-width: 700px) {
-    .hero__art {
-      top: -14%;
-      right: -8%;
-      width: min(64%, 560px);
+    .hero__scan {
+      top: -22%;
+      right: -6%;
+      width: min(52%, 460px);
+      opacity: 0.6;
     }
   }
 
-  /* На узких экранах объект уходит вверх, а низ плитки затягивается вуалью,
-     чтобы лид и кнопки читались поверх стекла */
+  /* Кадр затягивается снизу, чтобы лид и кнопки читались поверх фото */
   .hero__stage::after {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 56%;
+    inset: 0;
     z-index: 0;
     background: linear-gradient(
       to top,
-      #eef2f3 0%,
-      rgb(238 242 243 / 0.92) 46%,
-      rgb(238 242 243 / 0) 100%
+      rgb(8 26 34 / 0.95) 0%,
+      rgb(8 26 34 / 0.82) 34%,
+      rgb(8 26 34 / 0.42) 62%,
+      rgb(8 26 34 / 0.14) 100%
     );
     pointer-events: none;
   }
 
+  /* На телефоне кадр занимает верх плитки, текст живёт на сплошной подложке —
+     иначе лид ложится прямо на лицо врача */
+  @media (max-width: 699px) {
+    .hero__media {
+      inset: 0 0 auto;
+      height: 52%;
+    }
+
+    .hero__stage::after {
+      background: linear-gradient(
+        to top,
+        var(--ink) 0%,
+        var(--ink) 52%,
+        rgb(8 26 34 / 0.55) 70%,
+        rgb(8 26 34 / 0.1) 100%
+      );
+    }
+
+    .hero__stage {
+      min-height: 500px;
+    }
+  }
+
   @media (min-width: 700px) {
     .hero__stage::after {
-      height: 48%;
       background: linear-gradient(
         to top,
-        #eef2f3 0%,
-        rgb(238 242 243 / 0.86) 40%,
-        rgb(238 242 243 / 0) 100%
+        rgb(8 26 34 / 0.94) 0%,
+        rgb(8 26 34 / 0.72) 40%,
+        rgb(8 26 34 / 0.26) 72%,
+        rgb(8 26 34 / 0.06) 100%
       );
-    }
-  }
-
-  @media (min-width: 1000px) {
-    .hero__stage::after {
-      height: 42%;
-      background: linear-gradient(
-        to top,
-        #e6edee 0%,
-        rgb(232 238 239 / 0.7) 46%,
-        rgb(232 238 239 / 0) 100%
-      );
-    }
-  }
-
-  .hero__scan {
-    width: 100%;
-  }
-
-  .hero__object {
-    position: absolute;
-    top: 4%;
-    left: 50%;
-    width: 46%;
-    height: auto;
-    transform: translateX(-50%);
-    opacity: 0;
-    animation: hero-object 1200ms var(--ease) 700ms forwards;
-  }
-
-  @keyframes hero-object {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-18px) scale(0.97);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%);
     }
   }
 
@@ -322,7 +322,21 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   .hero__lead {
     font-size: var(--t-lead);
     line-height: 1.45;
-    color: var(--ink-soft);
+    color: color-mix(in oklab, #ffffff 82%, transparent);
+  }
+
+  .hero__stage .btn-ghost {
+    border-color: color-mix(in oklab, #ffffff 34%, transparent);
+    color: #fff;
+  }
+
+  .hero__stage .btn-ghost::before {
+    background: #fff;
+  }
+
+  .hero__stage .btn-ghost:hover {
+    color: var(--ink);
+    border-color: #fff;
   }
 
   .hero__cta {
@@ -522,9 +536,8 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     .hero__eyebrow,
     .hero__bento,
     .hero__trust,
-    .hero__object {
+    .hero__media img {
       opacity: 1;
-      animation: none;
     }
     .hero__line > span {
       transform: none;
