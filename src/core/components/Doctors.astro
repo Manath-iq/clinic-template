@@ -19,47 +19,59 @@ const { doctors } = content;
       {doctors.map((d, i) => (
         <li class="docs__item" data-reveal style={`--reveal-delay: ${i * 60}ms`}>
           <article class="docs__card">
-            <div class="docs__photo">
-              <img
-                src={url(d.photo)}
-                alt={`${d.nameFull} — ${d.position.toLowerCase()}, центр «АЯЗ», Нижнекамск`}
-                width="400"
-                height="500"
-                loading="lazy"
-              />
-              <span class="docs__exp data">
-                {d.experience} <span>лет стажа</span>
+            {/* Фото-плитка с подписью поверх — как в референсах */}
+            <div class="tile docs__photo">
+              <span class="tile__media">
+                <img
+                  src={url(d.photo)}
+                  alt={`${d.nameFull} — ${d.position.toLowerCase()}, центр «АЯЗ», Нижнекамск`}
+                  width="800"
+                  height="1000"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+
+              <span class="docs__photo-top">
+                <span class="pill docs__exp">
+                  <span class="data">{d.experience}</span> лет стажа
+                </span>
+              </span>
+
+              <span class="docs__photo-bottom">
+                <span class="docs__overlay">
+                  <span class="docs__name">{d.nameFull}</span>
+                  <span class="docs__position">{d.position}</span>
+                </span>
+                <button
+                  type="button"
+                  class="arrow-btn"
+                  data-book-open
+                  data-doctor={d.id}
+                  aria-label={`Записаться к врачу: ${d.nameFull}`}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                    <path d="M7 17 17 7M9 7h8v8" />
+                  </svg>
+                </button>
               </span>
             </div>
 
-            <div class="docs__body">
-              <h3 class="docs__name">{d.nameFull}</h3>
-              <p class="docs__position">{d.position}</p>
-
-              <dl class="docs__facts">
-                <div>
-                  <dt>Категория</dt>
-                  <dd>{d.category}</dd>
-                </div>
-                <div>
-                  <dt>Образование</dt>
-                  <dd>{d.education}</dd>
-                </div>
-                <div>
-                  <dt>Специализация</dt>
-                  <dd>{d.focus}</dd>
-                </div>
-              </dl>
-
-              <p class="docs__extra t-xs">{d.extra}</p>
-
-              <button type="button" class="docs__book" data-book-open data-doctor={d.id}>
-                Записаться к врачу
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </button>
-            </div>
+            {/* Квалификация — обязательна по ПП 736 */}
+            <dl class="docs__facts">
+              <div>
+                <dt>Категория</dt>
+                <dd>{d.category}</dd>
+              </div>
+              <div>
+                <dt>Образование</dt>
+                <dd>{d.education}</dd>
+              </div>
+              <div>
+                <dt>Специализация</dt>
+                <dd>{d.focus}</dd>
+              </div>
+            </dl>
           </article>
         </li>
       ))}
@@ -70,21 +82,19 @@ const { doctors } = content;
 <style>
   .docs {
     display: grid;
-    gap: 1px;
+    gap: var(--tile-gap);
     margin: 0;
     padding: 0;
     list-style: none;
-    background: var(--hairline);
-    border-block: 1px solid var(--hairline);
   }
 
-  @media (min-width: 760px) {
+  @media (min-width: 620px) {
     .docs {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  @media (min-width: 1160px) {
+  @media (min-width: 1080px) {
     .docs {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
@@ -94,77 +104,78 @@ const { doctors } = content;
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--paper);
-    padding: 24px 24px 28px;
-    transition: background var(--dur-fast) var(--ease);
   }
 
-  .docs__card:hover {
-    background: var(--surface);
-  }
-
+  /* ─── Фото ─── */
   .docs__photo {
-    position: relative;
-    margin-bottom: 22px;
+    display: flex;
+    flex: none; /* иначе flex-контейнер карточки схлопывает aspect-ratio */
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    aspect-ratio: 4 / 5;
+    padding: 14px;
   }
 
-  .docs__photo img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    border-radius: var(--r-sm);
-    filter: grayscale(0.15);
+  .docs__photo .tile__media img {
+    object-position: center 22%;
+  }
+
+  .docs__photo-top,
+  .docs__photo-bottom {
+    position: relative;
+    z-index: 1;
+  }
+
+  .docs__photo-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
   }
 
   .docs__exp {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    padding: 10px 14px;
-    background: var(--ink);
-    color: var(--paper);
-    font-size: 1.125rem;
+    gap: 5px;
+  }
+
+  .docs__exp .data {
+    font-size: 1rem;
     font-weight: 500;
-    border-radius: 0 var(--r-sm) 0 var(--r-sm);
   }
 
-  .docs__exp span {
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: 0.72;
-  }
-
-  /* Тянем тело карточки, чтобы «Записаться к врачу» встало по низу у всех */
-  .docs__body {
+  .docs__overlay {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    gap: 4px;
+    color: #fff;
+    min-width: 0;
   }
 
   .docs__name {
-    font-size: 1.1875rem;
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
     font-weight: 600;
     letter-spacing: -0.015em;
     line-height: 1.2;
   }
 
   .docs__position {
-    margin-top: 8px;
-    font-size: var(--t-sm);
-    color: var(--pulse);
+    font-size: var(--t-xs);
+    line-height: 1.3;
+    color: color-mix(in oklab, #ffffff 80%, transparent);
   }
 
+  /* ─── Квалификация ─── */
   .docs__facts {
     display: grid;
     gap: 12px;
-    margin: 20px 0 0;
-    padding-top: 18px;
-    border-top: 1px solid var(--hairline);
+    margin: 16px 0 0;
+    padding: 18px 20px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    flex: 1;
+    align-content: start;
   }
 
   .docs__facts dt {
@@ -177,30 +188,7 @@ const { doctors } = content;
 
   .docs__facts dd {
     margin: 4px 0 0;
-    font-size: var(--t-sm);
-    line-height: 1.4;
-  }
-
-  .docs__extra {
-    margin-top: 18px;
-    color: var(--ink-soft);
-    line-height: 1.45;
-  }
-
-  .docs__book {
-    display: inline-flex;
-    align-self: flex-start;
-    align-items: center;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 22px;
     font-size: var(--t-xs);
-    font-weight: 500;
-    color: var(--pulse);
-    transition: gap var(--dur-fast) var(--ease);
-  }
-
-  .docs__book:hover {
-    gap: 13px;
+    line-height: 1.4;
   }
 </style>

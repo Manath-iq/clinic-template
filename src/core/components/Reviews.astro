@@ -68,7 +68,7 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
 <style>
   .rev__grid {
     display: grid;
-    gap: 12px;
+    gap: var(--tile-gap);
   }
 
   @media (min-width: 960px) {
@@ -82,6 +82,7 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
   /* ─── Сводка ─── */
   .rev__summary {
     padding: 28px;
+    border-radius: var(--r-lg);
     position: sticky;
     top: 96px;
   }
@@ -164,6 +165,7 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
     flex-direction: column;
     gap: 16px;
     padding: 26px;
+    border-radius: var(--r-lg);
   }
 
   .rev__head {

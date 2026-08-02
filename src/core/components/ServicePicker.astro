@@ -1,11 +1,43 @@
 ---
+import { url } from '../lib/url';
 import content from '../../client/content.json';
 import SectionHead from './SectionHead.astro';
 
 const { services, groups } = content;
-const VISIBLE = 8;
+const VISIBLE = 6;
 
 const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+
+// Плитки-зоны: часть с фотографией, часть — фирменная градиентная поверхность
+// Фото добавляются по мере готовности; без него плитка рисуется
+// фирменной градиентной поверхностью со следом сектор-скана.
+const photos = import.meta.glob('/public/img/zones/*.webp', { eager: true });
+const hasPhoto = (id: string) => `/public/img/zones/${id}.webp` in photos;
+
+const zones = [
+  { id: 'abdomen', name: 'Живот и почки', span: 'wide' },
+  { id: 'kids', name: 'Детям', span: 'normal' },
+  { id: 'thyroid', name: 'Щитовидка и мягкие ткани', span: 'normal' },
+  { id: 'heart', name: 'Сердце и сосуды', span: 'normal' },
+  { id: 'women', name: 'Женское', span: 'wide' },
+  { id: 'men', name: 'Мужское', span: 'normal' },
+].map((z) => ({
+  ...z,
+  photo: hasPhoto(z.id) ? `/img/zones/${z.id}.webp` : null,
+  // Плитки без фото держат содержанием, а не одной подписью
+  hint: services
+    .filter((s) => s.group === z.id)
+    .slice(0, 3)
+    .map((s) => {
+      const short = s.name.replace(/ —.*/, '').replace(/ с .*/, '');
+      return short.length > 26 ? short.slice(0, 24).trimEnd() + '…' : short;
+    })
+    .join(' · '),
+}));
+
+const countIn = (id: string) => services.filter((s) => s.group === id).length;
+const minPriceIn = (id: string) =>
+  Math.min(...services.filter((s) => s.group === id).map((s) => s.price));
 ---
 
 <section class="section" id="services">
@@ -14,24 +46,81 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
       index="02"
       eyebrow="Подбор исследования"
       title="Найдите своё исследование"
-      lead="Введите название или орган — например, «печень» или «щитовидка». Если не уверены, что нужно, выберите зону тела фильтром."
+      lead="Выберите зону тела или введите название — например, «печень» или «щитовидка»."
     />
 
-    {/* Поиск + фильтры */}
+    {/* ─── Bento-плитки зон ─────────────────────────────────────── */}
+    <div class="zones" data-reveal>
+      {zones.map((z, i) => (
+        <button
+          type="button"
+          class="tile zone"
+          data-span={z.span}
+          data-zone={z.id}
+          data-photo={z.photo ? '' : undefined}
+          style={`--reveal-delay: ${i * 50}ms`}
+          aria-label={`Показать исследования: ${z.name}`}
+        >
+          {z.photo ? (
+            <span class="tile__media">
+              <img
+                src={url(z.photo)}
+                alt=""
+                width="800"
+                height="800"
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
+          ) : (
+            /* Без фото плитку держит фирменный мотив сектора */
+            <svg class="zone__glyph decor" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+              <path
+                d="M100 6 L192 172 A104 104 0 0 1 8 172 Z"
+                fill="var(--pulse-bright)"
+                fill-opacity=".07"
+                stroke="var(--pulse-bright)"
+                stroke-opacity=".22"
+              />
+              <g stroke="var(--pulse-bright)" stroke-opacity=".16" fill="none">
+                <path d="M62 96 A 44 44 0 0 0 138 96" />
+                <path d="M40 136 A 76 76 0 0 0 160 136" />
+                <path d="M20 172 A 108 108 0 0 0 180 172" />
+              </g>
+              <g fill="var(--pulse-bright)" fill-opacity=".28">
+                <circle cx="86" cy="78" r="2.6" /><circle cx="118" cy="94" r="2" />
+                <circle cx="70" cy="124" r="3" /><circle cx="132" cy="140" r="2.4" />
+                <circle cx="100" cy="158" r="2.2" /><circle cx="52" cy="162" r="2.6" />
+                <circle cx="150" cy="170" r="2" /><circle cx="104" cy="112" r="1.8" />
+              </g>
+            </svg>
+          )}
+
+          <span class="zone__top">
+            <span class="pill zone__pill">{z.name}</span>
+            {!z.photo && <span class="zone__hint">{z.hint}</span>}
+          </span>
+
+          <span class="zone__bottom">
+            <span class="zone__meta">
+              <span class="data">{countIn(z.id)}</span> исследований · от{' '}
+              <span class="data data-price">{fmt(minPriceIn(z.id))} ₽</span>
+            </span>
+            <span class="arrow-btn" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                <path d="M7 17 17 7M9 7h8v8" />
+              </svg>
+            </span>
+          </span>
+        </button>
+      ))}
+    </div>
+
+    {/* ─── Поиск и фильтры ──────────────────────────────────────── */}
     <div class="picker__controls" data-reveal>
       <div class="picker__search">
-        <svg
-          class="picker__search-icon"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
+        <svg class="picker__search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
         </svg>
         <label class="sr-only" for="service-search">Поиск исследования</label>
         <input
@@ -43,7 +132,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
           data-picker-search
         />
         <button type="button" class="picker__clear" data-picker-clear hidden aria-label="Очистить поиск">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -51,19 +140,14 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 
       <div class="scroll-x picker__filters" role="group" aria-label="Фильтр по зоне">
         {groups.map((g, i) => (
-          <button
-            type="button"
-            class="chip"
-            data-picker-filter={g.id}
-            aria-pressed={i === 0 ? 'true' : 'false'}
-          >
+          <button type="button" class="chip" data-picker-filter={g.id} aria-pressed={i === 0 ? 'true' : 'false'}>
             {g.name}
           </button>
         ))}
       </div>
     </div>
 
-    {/* Карточки */}
+    {/* ─── Карточки услуг ───────────────────────────────────────── */}
     <ul class="picker__list" data-picker-list>
       {services.map((s, i) => (
         <li
@@ -71,33 +155,22 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
           data-service-card
           data-group={s.group}
           data-name={`${s.name} ${s.note ?? ''}`.toLowerCase()}
-          data-hidden-initial={i >= VISIBLE ? 'true' : undefined}
           hidden={i >= VISIBLE}
           data-reveal={i < VISIBLE ? '' : undefined}
-          style={i < VISIBLE ? `--reveal-delay: ${i * 60}ms` : undefined}
+          style={i < VISIBLE ? `--reveal-delay: ${i * 50}ms` : undefined}
         >
           <article class="card card-hover picker__card">
-            <div class="picker__card-top">
+            <div>
               <h3 class="picker__name">{s.name}</h3>
               {s.note && <p class="picker__note t-xs">{s.note}</p>}
             </div>
 
             <div class="picker__meta">
-              <span class="picker__meta-item data" title="Длительность">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                </svg>
-                {s.duration} мин
-              </span>
+              <span class="picker__tag data">{s.duration} мин</span>
               {s.needsPrep ? (
-                <span class="picker__meta-item picker__meta-item--prep" title="Требуется подготовка">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                    <path d="M12 9v4M12 17h.01" /><circle cx="12" cy="12" r="9" />
-                  </svg>
-                  <a href="#prep">Нужна подготовка</a>
-                </span>
+                <a href="#prep" class="picker__tag picker__tag--prep">Нужна подготовка</a>
               ) : (
-                <span class="picker__meta-item">Без подготовки</span>
+                <span class="picker__tag">Без подготовки</span>
               )}
             </div>
 
@@ -105,14 +178,13 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
               <p class="picker__price data data-price">{fmt(s.price)} <span>₽</span></p>
               <button
                 type="button"
-                class="picker__book"
+                class="arrow-btn arrow-btn--accent"
                 data-book-open
                 data-service={s.id}
                 aria-label={`Записаться: ${s.name}`}
               >
-                Записаться
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                  <path d="M7 17 17 7M9 7h8v8" />
                 </svg>
               </button>
             </div>
@@ -144,18 +216,134 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     white-space: nowrap;
   }
 
+  /* ─── Плитки зон ─── */
+  .zones {
+    display: grid;
+    gap: var(--tile-gap);
+    margin-bottom: var(--tile-gap);
+  }
+
+  /* На телефоне плитки в одну колонку — крупные тач-зоны, ничего не режется */
+  @media (min-width: 520px) {
+    .zones {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 760px) {
+    .zones {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-rows: minmax(200px, auto);
+    }
+    .zone[data-span='wide'] {
+      grid-column: span 2;
+    }
+  }
+
+  .zone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 200px;
+    padding: 14px;
+    text-align: left;
+    color: var(--ink);
+    /* Плитки без фото — фирменная поверхность, а не пустая карточка */
+    background: linear-gradient(155deg, #ffffff 0%, #e7eeef 62%, #dbe6e8 100%);
+  }
+
+  @media (min-width: 760px) {
+    .zone {
+      padding: 16px;
+    }
+  }
+
+  .zone[data-photo] {
+    color: #fff;
+  }
+
+  .zone[data-photo] .zone__meta {
+    color: color-mix(in oklab, #ffffff 82%, transparent);
+  }
+
+  .zone__glyph {
+    position: absolute;
+    right: -6%;
+    bottom: -34%;
+    width: 54%;
+    max-width: 200px;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+
+  .zone[data-span='wide'] .zone__glyph {
+    width: 30%;
+    right: 2%;
+    bottom: -28%;
+  }
+
+  .zone__hint {
+    display: block;
+    margin-top: 12px;
+    padding-left: 4px;
+    max-width: 28ch;
+    font-size: var(--t-xs);
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+
+  .zone__top,
+  .zone__bottom {
+    position: relative;
+    z-index: 1;
+  }
+
+  .zone__bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .zone__pill {
+    font-weight: 500;
+    white-space: normal;
+    max-width: 100%;
+  }
+
+  .zone__meta {
+    font-size: var(--t-xs);
+    line-height: 1.35;
+    color: var(--ink-soft);
+  }
+
+  /* На телефоне подсказку прячем — плитка живёт названием и ценой */
+  @media (max-width: 519px) {
+    .zone__hint {
+      display: none;
+    }
+    .zone {
+      min-height: 168px;
+    }
+    .zone__meta {
+      white-space: nowrap;
+    }
+  }
+
   /* ─── Управление ─── */
   .picker__controls {
     display: grid;
-    gap: 16px;
-    margin-bottom: 36px;
+    gap: 12px;
+    margin-bottom: 20px;
   }
 
   @media (min-width: 900px) {
     .picker__controls {
-      grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
       align-items: center;
-      gap: 24px;
+      gap: 20px;
     }
   }
 
@@ -167,22 +355,23 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 
   .picker__search-icon {
     position: absolute;
-    left: 16px;
+    left: 18px;
     color: var(--ink-soft);
     pointer-events: none;
   }
 
   .picker__input {
     width: 100%;
-    min-height: 52px;
-    padding: 0 44px;
-    border: 1px solid var(--hairline);
-    border-radius: var(--r-sm);
+    min-height: 54px;
+    padding: 0 46px;
+    border: 1px solid transparent;
+    border-radius: var(--r-pill);
     background: var(--surface);
+    box-shadow: var(--shadow-tile);
     font: inherit;
     font-size: var(--t-sm);
     color: var(--ink);
-    transition: border-color var(--dur-fast) var(--ease);
+    transition: box-shadow var(--dur-fast) var(--ease);
   }
 
   .picker__input::placeholder {
@@ -190,8 +379,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   }
 
   .picker__input:focus {
-    border-color: var(--pulse);
-    outline-offset: 1px;
+    box-shadow: var(--shadow-lift);
   }
 
   .picker__input::-webkit-search-cancel-button {
@@ -200,7 +388,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 
   .picker__clear {
     position: absolute;
-    right: 12px;
+    right: 14px;
     display: grid;
     place-items: center;
     width: 32px;
@@ -216,6 +404,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   .picker__filters {
     margin-inline: calc(var(--gutter) * -1);
     padding-inline: var(--gutter);
+    padding-block: 4px;
   }
 
   @media (min-width: 900px) {
@@ -229,13 +418,13 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   /* ─── Список ─── */
   .picker__list {
     display: grid;
-    gap: 12px;
+    gap: var(--tile-gap);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  @media (min-width: 700px) {
+  @media (min-width: 640px) {
     .picker__list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -250,16 +439,16 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   .picker__card {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
     height: 100%;
-    padding: 24px;
+    padding: 22px;
   }
 
   .picker__name {
-    font-size: 1.125rem;
+    font-size: 1.0625rem;
     font-weight: 500;
     letter-spacing: -0.015em;
-    line-height: 1.25;
+    line-height: 1.3;
   }
 
   .picker__note {
@@ -271,26 +460,23 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   .picker__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 16px;
+    gap: 6px;
     margin-top: auto;
+  }
+
+  .picker__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: var(--r-pill);
+    background: var(--paper);
     font-size: var(--t-xs);
     color: var(--ink-soft);
   }
 
-  .picker__meta-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .picker__meta-item--prep {
-    color: var(--pulse);
-  }
-
-  .picker__meta-item--prep a {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-thickness: 1px;
+  .picker__tag--prep {
+    background: var(--pulse-dim);
+    color: var(--pulse-deep);
   }
 
   .picker__foot {
@@ -298,35 +484,18 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding-top: 18px;
+    padding-top: 16px;
     border-top: 1px solid var(--hairline);
   }
 
   .picker__price {
     font-size: 1.375rem;
     font-weight: 500;
-    color: var(--ink);
   }
 
   .picker__price span {
     font-size: 0.875rem;
     color: var(--ink-soft);
-  }
-
-  .picker__book {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    min-height: 40px;
-    padding-left: 4px;
-    font-size: var(--t-xs);
-    font-weight: 500;
-    color: var(--pulse);
-    transition: gap var(--dur-fast) var(--ease);
-  }
-
-  .picker__book:hover {
-    gap: 12px;
   }
 
   .picker__empty {
@@ -339,7 +508,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   .picker__more {
     display: flex;
     justify-content: center;
-    margin-top: 32px;
+    margin-top: 28px;
   }
 
   .picker__more .btn span {
@@ -359,16 +528,17 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   const moreBtn = document.querySelector<HTMLButtonElement>('[data-picker-more]');
   const empty = document.querySelector<HTMLElement>('[data-picker-empty]');
   const filters = document.querySelectorAll<HTMLButtonElement>('[data-picker-filter]');
+  const zoneTiles = document.querySelectorAll<HTMLButtonElement>('[data-zone]');
 
   if (list && search && moreBtn && empty) {
     const cards = Array.from(list.querySelectorAll<HTMLElement>('[data-service-card]'));
+    const LIMIT = 6;
     let group = 'all';
     let expanded = false;
     let firstRun = true;
 
     const apply = () => {
       const q = search.value.trim().toLowerCase();
-      // Поиск и фильтр всегда показывают полный результат, без «показать все»
       const limited = !expanded && !q && group === 'all';
       let shown = 0;
 
@@ -377,10 +547,9 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
         const matchQuery = !q || (card.dataset.name || '').includes(q);
         const match = matchGroup && matchQuery;
 
-        if (match && (!limited || shown < 8)) {
+        if (match && (!limited || shown < LIMIT)) {
           card.hidden = false;
           shown++;
-          // После взаимодействия карточки показываются сразу, без ожидания скролла
           if (!firstRun) card.classList.add('is-visible');
         } else {
           card.hidden = true;
@@ -394,9 +563,23 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
       }).length;
 
       empty.hidden = total > 0;
-      moreBtn.parentElement!.hidden = !limited || total <= 8;
+      moreBtn.parentElement!.hidden = !limited || total <= LIMIT;
       clearBtn!.hidden = !search.value;
+
+      // Подсветка активной зоны и чипа
+      filters.forEach((b) =>
+        b.setAttribute('aria-pressed', String(b.dataset.pickerFilter === group))
+      );
+      zoneTiles.forEach((t) =>
+        t.toggleAttribute('data-active', t.dataset.zone === group)
+      );
+
       firstRun = false;
+    };
+
+    const setGroup = (id: string) => {
+      group = id;
+      apply();
     };
 
     search.addEventListener('input', apply);
@@ -407,15 +590,18 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
       apply();
     });
 
-    filters.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        group = btn.dataset.pickerFilter || 'all';
-        filters.forEach((b) =>
-          b.setAttribute('aria-pressed', String(b === btn))
-        );
-        apply();
-      });
-    });
+    filters.forEach((btn) =>
+      btn.addEventListener('click', () => setGroup(btn.dataset.pickerFilter || 'all'))
+    );
+
+    // Клик по плитке зоны фильтрует список и подскроллит к нему
+    zoneTiles.forEach((tile) =>
+      tile.addEventListener('click', () => {
+        const id = tile.dataset.zone!;
+        setGroup(group === id ? 'all' : id);
+        list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+    );
 
     moreBtn.addEventListener('click', () => {
       expanded = true;

@@ -107,7 +107,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 <style>
   .docs2 {
     display: grid;
-    gap: 12px;
+    gap: var(--tile-gap);
   }
 
   @media (min-width: 960px) {
@@ -120,8 +120,34 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 
   /* ─── Вычет ─── */
   .docs2__tax {
-    padding: 32px;
-    border-color: var(--ink);
+    padding: 30px;
+    border-radius: var(--r-lg);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .docs2__tax .docs2__tax-text,
+  .docs2__tax .docs2__tax-eyebrow,
+  .docs2__tax .docs2__tax-example > p:first-child {
+    color: color-mix(in oklab, var(--paper) 66%, transparent);
+  }
+
+  .docs2__tax .docs2__tax-example {
+    border-top-color: color-mix(in oklab, #ffffff 16%, transparent);
+  }
+
+  .docs2__tax .docs2__tax-calc > span:first-child,
+  .docs2__tax .docs2__tax-calc > svg {
+    color: color-mix(in oklab, var(--paper) 58%, transparent);
+  }
+
+  .docs2__tax .docs2__tax-final {
+    color: #ff8c6e;
+  }
+
+  .docs2__tax .docs2__tax-back {
+    background: color-mix(in oklab, #ffffff 14%, transparent);
+    color: var(--paper);
   }
 
   .docs2__tax-title {
@@ -186,7 +212,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
   /* ─── Список документов ─── */
   .docs2__list {
     display: grid;
-    gap: 12px;
+    gap: var(--tile-gap);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -194,6 +220,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 
   .docs2__item {
     padding: 24px 26px;
+    border-radius: var(--r-lg);
   }
 
   .docs2__name {

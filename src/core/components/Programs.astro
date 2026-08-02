@@ -80,7 +80,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 <style>
   .prog__list {
     display: grid;
-    gap: 12px;
+    gap: var(--tile-gap);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -108,29 +108,61 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     flex-direction: column;
     gap: 22px;
     height: 100%;
-    padding: 28px;
+    padding: 26px;
+    border-radius: var(--r-lg);
   }
 
+  /* Выделенная программа — тёмная плитка, а не карточка с рамкой */
   .prog__item[data-featured] .prog__card {
-    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .prog__item[data-featured] .prog__for,
+  .prog__item[data-featured] .prog__count,
+  .prog__item[data-featured] .prog__duration,
+  .prog__item[data-featured] .prog__includes {
+    color: color-mix(in oklab, var(--paper) 68%, transparent);
+  }
+
+  .prog__item[data-featured] .prog__old s {
+    color: color-mix(in oklab, var(--paper) 56%, transparent);
+  }
+
+  .prog__item[data-featured] .prog__details {
+    border-color: color-mix(in oklab, #ffffff 18%, transparent);
+  }
+
+  .prog__item[data-featured] .prog__price {
+    color: #ff8c6e;
+  }
+
+  .prog__item[data-featured] .prog__save {
+    background: color-mix(in oklab, #ffffff 14%, transparent);
+    color: var(--paper);
   }
 
   .prog__badge {
     position: absolute;
-    top: -1px;
-    right: 20px;
-    padding: 6px 12px;
+    top: 18px;
+    right: 18px;
+    padding: 7px 14px;
     background: var(--doppler-text);
     color: #fff;
     font-family: var(--font-data);
     font-size: 0.625rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    border-radius: 0 0 var(--r-sm) var(--r-sm);
+    border-radius: var(--r-pill);
   }
 
   .prog__name {
-    font-size: 1.5rem;
+    font-size: 1.4375rem;
+    padding-right: 96px;
+  }
+
+  .prog__item:not([data-featured]) .prog__name {
+    padding-right: 0;
   }
 
   .prog__for {

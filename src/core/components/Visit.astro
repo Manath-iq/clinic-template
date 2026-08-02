@@ -45,10 +45,10 @@ const { visit } = content;
 
 <style>
   .visit__photo {
-    margin: 0 0 12px;
-    border-radius: var(--r-md);
+    margin: 0 0 var(--tile-gap);
+    border-radius: var(--r-lg);
     overflow: hidden;
-    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-tile);
   }
 
   .visit__photo img {
@@ -61,14 +61,10 @@ const { visit } = content;
 
   .visit {
     display: grid;
-    gap: 1px;
+    gap: var(--tile-gap);
     margin: 0;
     padding: 0;
     list-style: none;
-    background: var(--hairline);
-    border: 1px solid var(--hairline);
-    border-radius: var(--r-md);
-    overflow: hidden;
   }
 
   @media (min-width: 700px) {
@@ -88,7 +84,9 @@ const { visit } = content;
     display: flex;
     flex-direction: column;
     background: var(--surface);
-    padding: 32px 28px 36px;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-tile);
+    padding: 28px 26px 32px;
   }
 
   /* Шаг 4 — то, ради чего люди выбирают центр */

@@ -3,69 +3,111 @@ import { url } from '../lib/url';
 import content from '../../client/content.json';
 import ScanSector from './ScanSector.astro';
 
-const { hero, clinic } = content;
+const { hero, clinic, contacts, services } = content;
+
+// Три «быстрых» направления в hero — как список услуг в референсе
+const quick = ['obp', 'pelvis', 'thyroid']
+  .map((id) => services.find((s) => s.id === id)!)
+  .filter(Boolean);
+
+const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
 ---
 
 <section class="hero">
-  <div class="hero__art decor" aria-hidden="true">
-    <div class="hero__scan">
-      <ScanSector />
-    </div>
-    <img
-      class="hero__object"
-      src={url("/img/hero-probe.webp")}
-      alt=""
-      width="601"
-      height="906"
-      fetchpriority="high"
-      decoding="async"
-    />
-  </div>
+  <div class="container">
+    {/* ─── Верх: заголовок ─────────────────────────────────────── */}
+    <div class="hero__head">
+      <p class="hero__eyebrow eyebrow">{clinic.tagline} · {clinic.city}</p>
 
-  <div class="container hero__inner">
-    <p class="hero__eyebrow eyebrow">
-      {clinic.tagline} · {clinic.city}
-    </p>
-
-    <h1 class="hero__h1 t-display">
-      {hero.h1.map((line, i) => (
-        <span class="hero__line" style={`--line-delay: ${180 + i * 90}ms`}>
-          <span>{line}</span>
-        </span>
-      ))}
-    </h1>
-
-    <div class="hero__grid">
-      <p class="hero__lead t-lead">{hero.lead}</p>
-
-      <div class="hero__cta">
-        <button type="button" class="btn btn-primary" data-book-open>
-          Записаться на исследование
-        </button>
-        <a href="#price" class="btn btn-ghost">Смотреть цены</a>
-      </div>
-    </div>
-
-    {/* Ближайшие свободные слоты — кликабельны, прокидываются в форму */}
-    <div class="hero__slots">
-      <span class="hero__slots-label eyebrow">Ближайшая запись</span>
-      <div class="scroll-x hero__slots-list">
-        {hero.slots.map((slot) => (
-          <button
-            type="button"
-            class="chip chip--slot"
-            data-slot={`${slot.label}, ${slot.time}`}
-            data-goal="slot_click"
-          >
-            <span class="chip__dot" aria-hidden="true"></span>
-            {slot.label}
-            <span class="data chip__time">{slot.time}</span>
-          </button>
+      <h1 class="hero__h1 t-display">
+        {hero.h1.map((line, i) => (
+          <span class="hero__line" style={`--line-delay: ${160 + i * 90}ms`}>
+            <span>{line}</span>
+          </span>
         ))}
-      </div>
+      </h1>
     </div>
 
-    {/* Строка доверия: 4 проверяемых факта */}
+    {/* ─── Bento: фото-плитка + панель записи ──────────────────── */}
+    <div class="hero__bento">
+      {/* Крупная плитка с объектом и сканом */}
+      <div class="hero__stage">
+        <div class="hero__art decor" aria-hidden="true">
+          <div class="hero__scan"><ScanSector /></div>
+          <img
+            class="hero__object"
+            src={url('/img/hero-probe.webp')}
+            alt=""
+            width="601"
+            height="906"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
+
+        <div class="hero__stage-top">
+          <span class="pill">
+            <span class="hero__dot" aria-hidden="true"></span>
+            Работаем сегодня до 20:00
+          </span>
+        </div>
+
+        <div class="hero__stage-bottom">
+          <p class="hero__lead">{hero.lead}</p>
+          <div class="hero__cta">
+            <button type="button" class="btn btn-primary" data-book-open>
+              Записаться на исследование
+            </button>
+            <a href="#price" class="btn btn-ghost">Смотреть цены</a>
+          </div>
+        </div>
+      </div>
+
+      {/* Панель: слоты + быстрые услуги */}
+      <aside class="hero__panel">
+        <div class="hero__slots">
+          <p class="hero__panel-label eyebrow">Ближайшая запись</p>
+          <div class="hero__slots-list">
+            {hero.slots.map((slot) => (
+              <button
+                type="button"
+                class="hero__slot"
+                data-slot={`${slot.label}, ${slot.time}`}
+                data-goal="slot_click"
+              >
+                <span class="hero__slot-day">{slot.label}</span>
+                <span class="hero__slot-time data">{slot.time}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="hero__quick">
+          <p class="hero__panel-label eyebrow">Чаще всего записываются</p>
+          <ul class="hero__quick-list">
+            {quick.map((s) => (
+              <li>
+                <button type="button" class="hero__quick-item" data-book-open data-service={s.id}>
+                  <span class="hero__quick-name">{s.name}</span>
+                  <span class="hero__quick-price data data-price">{fmt(s.price)} ₽</span>
+                  <span class="arrow-btn hero__quick-arrow" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                      <path d="M7 17 17 7M9 7h8v8" />
+                    </svg>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <a href="#services" class="hero__quick-all">
+            Все исследования
+            <span class="data">({services.length})</span>
+          </a>
+        </div>
+      </aside>
+    </div>
+
+    {/* ─── Строка доверия ──────────────────────────────────────── */}
     <dl class="hero__trust">
       {hero.trust.map((item) => (
         <div class="hero__trust-cell">
@@ -81,80 +123,19 @@ const { hero, clinic } = content;
 
 <style>
   .hero {
-    position: relative;
-    overflow: hidden;
-    padding-block: clamp(48px, 6vw, 88px) clamp(56px, 6vw, 96px);
+    padding-block: 28px clamp(40px, 5vw, 64px);
   }
 
-  /* Графика живёт за типографикой, справа — как объект из референсов */
-  .hero__art {
-    position: absolute;
-    top: -6%;
-    right: -14%;
-    width: min(78vw, 860px);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  @media (min-width: 900px) {
-    .hero__art {
-      top: 2%;
-      right: -7%;
-      width: min(44vw, 680px);
-    }
-  }
-
-  .hero__scan {
-    width: 100%;
-  }
-
-  /* 3D-датчик поверх развёртки — он и есть источник конуса */
-  .hero__object {
-    position: absolute;
-    top: 4%;
-    left: 50%;
-    width: 46%;
-    height: auto;
-    transform: translateX(-50%);
-    opacity: 0;
-    animation: hero-object 1200ms var(--ease) 300ms forwards;
-  }
-
-  @keyframes hero-object {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-18px) scale(0.97);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%);
-    }
-  }
-
-  .hero__inner {
-    position: relative;
-    z-index: 1;
-  }
-
+  /* ─── Заголовок ─── */
   .hero__eyebrow {
     opacity: 0;
-    animation: hero-up 600ms var(--ease) 80ms forwards;
+    animation: hero-up 600ms var(--ease) 60ms forwards;
   }
 
   .hero__h1 {
-    position: relative;
-    z-index: 2; /* заголовок читается поверх стеклянного объекта */
-    margin-top: 22px;
+    margin-top: 18px;
   }
 
-  /* На десктопе разбивка строк задана в контенте — не даём ей ломаться */
-  @media (min-width: 900px) {
-    .hero__line > span {
-      white-space: nowrap;
-    }
-  }
-
-  /* Строки H1 выезжают из-под маски — журнальный вход */
   .hero__line {
     display: block;
     overflow: hidden;
@@ -168,9 +149,14 @@ const { hero, clinic } = content;
     animation: hero-line 900ms var(--ease) var(--line-delay) forwards;
   }
 
-  /* Второй строке — акцентный цвет, как в референсе Prestige */
   .hero__line:nth-child(2) > span {
     color: var(--pulse);
+  }
+
+  @media (min-width: 900px) {
+    .hero__line > span {
+      white-space: nowrap;
+    }
   }
 
   @keyframes hero-line {
@@ -190,31 +176,160 @@ const { hero, clinic } = content;
     }
   }
 
-  .hero__grid {
+  /* ─── Bento ─── */
+  .hero__bento {
     display: grid;
-    gap: 32px;
-    margin-top: 44px;
+    gap: var(--tile-gap);
+    margin-top: clamp(28px, 3vw, 44px);
     opacity: 0;
-    animation: hero-up 700ms var(--ease) 620ms forwards;
+    animation: hero-up 700ms var(--ease) 560ms forwards;
   }
 
-  @media (min-width: 900px) {
-    .hero__grid {
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: end;
-      gap: 56px;
-      margin-top: 56px;
+  @media (min-width: 1000px) {
+    .hero__bento {
+      grid-template-columns: minmax(0, 1.62fr) minmax(320px, 1fr);
+      align-items: stretch;
     }
   }
 
+  /* Главная плитка */
+  .hero__stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: clamp(440px, 52vw, 560px);
+    padding: 20px;
+    border-radius: var(--r-lg);
+    background: linear-gradient(150deg, #ffffff 0%, #e8eeef 58%, #dfe8ea 100%);
+    box-shadow: var(--shadow-tile);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  @media (min-width: 700px) {
+    .hero__stage {
+      padding: 26px;
+    }
+  }
+
+  .hero__art {
+    position: absolute;
+    top: -20%;
+    right: -26%;
+    width: min(74%, 400px);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  @media (min-width: 700px) {
+    .hero__art {
+      top: -14%;
+      right: -8%;
+      width: min(64%, 560px);
+    }
+  }
+
+  /* На узких экранах объект уходит вверх, а низ плитки затягивается вуалью,
+     чтобы лид и кнопки читались поверх стекла */
+  .hero__stage::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 56%;
+    z-index: 0;
+    background: linear-gradient(
+      to top,
+      #eef2f3 0%,
+      rgb(238 242 243 / 0.92) 46%,
+      rgb(238 242 243 / 0) 100%
+    );
+    pointer-events: none;
+  }
+
+  @media (min-width: 700px) {
+    .hero__stage::after {
+      height: 48%;
+      background: linear-gradient(
+        to top,
+        #eef2f3 0%,
+        rgb(238 242 243 / 0.86) 40%,
+        rgb(238 242 243 / 0) 100%
+      );
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .hero__stage::after {
+      height: 42%;
+      background: linear-gradient(
+        to top,
+        #e6edee 0%,
+        rgb(232 238 239 / 0.7) 46%,
+        rgb(232 238 239 / 0) 100%
+      );
+    }
+  }
+
+  .hero__scan {
+    width: 100%;
+  }
+
+  .hero__object {
+    position: absolute;
+    top: 4%;
+    left: 50%;
+    width: 46%;
+    height: auto;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: hero-object 1200ms var(--ease) 700ms forwards;
+  }
+
+  @keyframes hero-object {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-18px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
+  }
+
+  .hero__stage-top {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--pulse);
+    box-shadow: 0 0 0 3px rgb(13 122 114 / 0.18);
+  }
+
+  .hero__stage-bottom {
+    position: relative;
+    z-index: 1;
+    max-width: 44ch;
+  }
+
   .hero__lead {
-    max-width: 46ch;
+    font-size: var(--t-lead);
+    line-height: 1.45;
+    color: var(--ink-soft);
   }
 
   .hero__cta {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
+    margin-top: 22px;
   }
 
   .hero__cta .btn {
@@ -227,71 +342,152 @@ const { hero, clinic } = content;
     }
   }
 
-  /* ─── Слоты ─── */
-  .hero__slots {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 40px;
-    opacity: 0;
-    animation: hero-up 700ms var(--ease) 760ms forwards;
+  /* ─── Боковая панель ─── */
+  .hero__panel {
+    display: grid;
+    gap: var(--tile-gap);
+    align-content: start;
   }
 
-  @media (min-width: 700px) {
-    .hero__slots {
-      flex-direction: row;
-      align-items: center;
-      gap: 20px;
+  @media (min-width: 640px) and (max-width: 999px) {
+    .hero__panel {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  .hero__slots-label {
-    flex: none;
+  @media (min-width: 1000px) {
+    .hero__panel {
+      grid-template-rows: auto 1fr;
+    }
+  }
+
+  .hero__slots,
+  .hero__quick {
+    padding: 22px;
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+
+  .hero__quick {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero__panel-label {
+    display: block;
+    margin-bottom: 14px;
   }
 
   .hero__slots-list {
-    margin-inline: calc(var(--gutter) * -1);
-    padding-inline: var(--gutter);
+    display: flex;
+    gap: 8px;
   }
 
-  @media (min-width: 700px) {
-    .hero__slots-list {
-      margin-inline: 0;
-      padding-inline: 0;
-    }
+  .hero__slot {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: var(--r-sm);
+    background: var(--paper);
+    text-align: left;
+    transition: background var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
 
-  .chip--slot {
-    background: var(--surface);
+  .hero__slot:hover {
+    background: var(--ink);
+    color: var(--paper);
   }
 
-  .chip__dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--pulse);
-    flex: none;
+  .hero__slot-day {
+    font-size: 0.6875rem;
+    color: var(--ink-soft);
   }
 
-  .chip__time {
+  .hero__slot:hover .hero__slot-day {
+    color: color-mix(in oklab, var(--paper) 72%, transparent);
+  }
+
+  .hero__slot-time {
+    font-size: 1.0625rem;
     font-weight: 500;
-    color: var(--ink);
   }
 
-  .chip--slot:hover .chip__time {
-    color: inherit;
+  /* Быстрые услуги */
+  .hero__quick-list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero__quick-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hairline);
+    text-align: left;
+  }
+
+  .hero__quick-list li:last-child .hero__quick-item {
+    border-bottom: 0;
+  }
+
+  .hero__quick-name {
+    font-size: var(--t-sm);
+    line-height: 1.3;
+  }
+
+  .hero__quick-price {
+    font-size: var(--t-sm);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .hero__quick-arrow {
+    width: 34px;
+    height: 34px;
+    box-shadow: none;
+    background: var(--paper);
+  }
+
+  .hero__quick-item:hover .hero__quick-arrow {
+    background: var(--pulse);
+    color: #fff;
+  }
+
+  .hero__quick-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 18px;
+    font-size: var(--t-xs);
+    font-weight: 500;
+    color: var(--pulse);
+  }
+
+  .hero__quick-all .data {
+    color: var(--ink-soft);
+    font-weight: 400;
   }
 
   /* ─── Строка доверия ─── */
   .hero__trust {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
-    margin: 56px 0 0;
-    background: var(--hairline);
-    border-block: 1px solid var(--hairline);
+    gap: var(--tile-gap);
+    margin: var(--tile-gap) 0 0;
     opacity: 0;
-    animation: hero-up 700ms var(--ease) 900ms forwards;
+    animation: hero-up 700ms var(--ease) 760ms forwards;
   }
 
   @media (min-width: 860px) {
@@ -301,22 +497,15 @@ const { hero, clinic } = content;
   }
 
   .hero__trust-cell {
-    background: var(--paper);
-    padding: 20px 20px 20px 0;
-  }
-
-  @media (min-width: 860px) {
-    .hero__trust-cell {
-      padding: 24px 28px 24px 0;
-    }
-    .hero__trust-cell + .hero__trust-cell {
-      padding-left: 28px;
-    }
+    padding: 18px 20px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
   }
 
   .hero__trust-label {
     font-family: var(--font-data);
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--ink-soft);
@@ -324,25 +513,21 @@ const { hero, clinic } = content;
 
   .hero__trust-value {
     margin: 8px 0 0;
-    font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+    font-size: clamp(0.9375rem, 0.85rem + 0.4vw, 1.1875rem);
     font-weight: 500;
     line-height: 1.2;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .hero__eyebrow,
-    .hero__grid,
-    .hero__slots,
-    .hero__trust {
+    .hero__bento,
+    .hero__trust,
+    .hero__object {
       opacity: 1;
       animation: none;
     }
     .hero__line > span {
       transform: none;
-      animation: none;
-    }
-    .hero__object {
-      opacity: 1;
       animation: none;
     }
   }

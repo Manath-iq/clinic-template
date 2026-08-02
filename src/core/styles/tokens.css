@@ -7,7 +7,7 @@
   /* Палитра */
   --ink: #0b2430; /* глубокий петроль — текст, тёмные секции */
   --ink-soft: #4a626e; /* вторичный текст */
-  --paper: #edf1f2; /* фон страницы */
+  --paper: #eceff0; /* фон страницы: чуть глубже, чтобы белые плитки отделялись */
   --surface: #ffffff; /* карточки */
   /* Бренд-акцент. Исходный тон ТЗ #12958C даёт на --paper только 3.24:1 —
      ниже порога 4.5:1 из п.12, поэтому текстовый вариант затемнён до 4.6:1,
@@ -45,13 +45,20 @@
   --t-xs: 0.8125rem;
 
   /* Сетка и ритм */
-  --container: 1200px;
+  --container: 1240px;
   --gutter: 24px;
-  --section-y: 104px;
+  --section-y: 96px;
+  --tile-gap: 12px; /* зазор между плитками bento */
 
-  /* Форма */
-  --r-sm: 4px;
-  --r-md: 12px;
+  /* Форма. Крупные скругления и мягкие тени — язык bento-карточек
+     из референсов клиента; они заменили волосяные линии исходного ТЗ. */
+  --r-sm: 10px; /* инпуты, мелкие элементы */
+  --r-md: 18px; /* карточки */
+  --r-lg: 26px; /* крупные плитки, фото, секции-острова */
+  --r-pill: 999px; /* чипы, круглые кнопки */
+
+  --shadow-tile: 0 2px 4px -2px rgb(11 36 48 / 0.06), 0 12px 28px -12px rgb(11 36 48 / 0.10);
+  --shadow-lift: 0 8px 16px -8px rgb(11 36 48 / 0.10), 0 24px 48px -20px rgb(11 36 48 / 0.18);
   --shadow-float: 0 24px 60px -24px rgb(11 36 48 / 0.35);
 
   /* Движение */
@@ -291,9 +298,9 @@ canvas {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 52px;
-  padding: 0 28px;
-  border-radius: var(--r-sm);
+  min-height: 54px;
+  padding: 0 30px;
+  border-radius: var(--r-pill);
   border: 1px solid transparent;
   background: var(--btn-bg);
   color: var(--btn-fg);
@@ -369,8 +376,8 @@ canvas {
 }
 
 .btn-sm {
-  min-height: 42px;
-  padding: 0 18px;
+  min-height: 44px;
+  padding: 0 20px;
   font-size: var(--t-xs);
 }
 
@@ -387,15 +394,126 @@ canvas {
 
 .card {
   background: var(--surface);
-  border: 1px solid var(--hairline);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  transition: transform var(--dur-fast) var(--ease),
-    border-color var(--dur-fast) var(--ease);
+  box-shadow: var(--shadow-tile);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 
 .card-hover:hover {
-  transform: translateY(-2px);
-  border-color: var(--pulse);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* ─── Плитка bento: фото + подпись поверх ───────────────────────── */
+
+.tile {
+  position: relative;
+  display: block;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-tile);
+  isolation: isolate;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.tile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+}
+
+.tile__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.tile__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  transition: transform 600ms var(--ease);
+}
+
+.tile:hover .tile__media img {
+  transform: scale(1.04);
+}
+
+/* Затемнение снизу, чтобы белый текст читался на любом кадре */
+.tile__media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(11 36 48 / 0.78) 0%,
+    rgb(11 36 48 / 0.42) 34%,
+    rgb(11 36 48 / 0.06) 66%,
+    transparent 100%
+  );
+}
+
+/* Метка поверх фото — «стеклянный» чип из референсов */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  background: rgb(255 255 255 / 0.92);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pill--dark {
+  background: rgb(11 36 48 / 0.72);
+  color: #fff;
+}
+
+.pill--accent {
+  background: var(--pulse);
+  color: #fff;
+}
+
+/* Круглая кнопка-стрелка в углу плитки */
+.arrow-btn {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 12px -4px rgb(11 36 48 / 0.25);
+  transition: background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease), transform var(--dur) var(--ease);
+}
+
+.arrow-btn svg {
+  transition: transform var(--dur) var(--ease);
+}
+
+.tile:hover .arrow-btn,
+.arrow-btn:hover {
+  background: var(--pulse);
+  color: #fff;
+}
+
+.tile:hover .arrow-btn svg,
+.arrow-btn:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.arrow-btn--accent {
+  background: var(--pulse);
+  color: #fff;
 }
 
 .hairline {
@@ -424,11 +542,12 @@ canvas {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 0 16px;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
   background: var(--surface);
+  box-shadow: var(--shadow-tile);
   font-size: var(--t-xs);
   white-space: nowrap;
   transition: all var(--dur-fast) var(--ease);

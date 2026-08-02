@@ -67,11 +67,21 @@ const { faq, contacts } = content;
   }
 
   .faq__list {
-    border-top: 1px solid var(--hairline);
+    display: grid;
+    gap: 8px;
   }
 
+  /* Каждый вопрос — отдельная плитка, а не строка в списке */
   .faq__item {
-    border-bottom: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    padding-inline: 22px;
+    transition: box-shadow var(--dur) var(--ease);
+  }
+
+  .faq__item[open] {
+    box-shadow: var(--shadow-lift);
   }
 
   .faq__q {
@@ -109,7 +119,7 @@ const { faq, contacts } = content;
   }
 
   .faq__a {
-    padding: 0 40px 24px 2px;
+    padding: 0 40px 22px 0;
     font-size: var(--t-sm);
     line-height: 1.6;
     color: var(--ink-soft);
@@ -119,6 +129,7 @@ const { faq, contacts } = content;
   /* ─── Сайдбар ─── */
   .faq__aside {
     padding: 28px;
+    border-radius: var(--r-lg);
     position: sticky;
     top: 96px;
   }
