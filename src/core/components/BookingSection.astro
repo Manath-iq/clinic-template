@@ -51,34 +51,43 @@ const { contacts, clinic } = content;
 
         {/* Карта: статичная схема, интерактивная — по клику (п. 10) */}
         <figure class="book__map" data-map>
-          <svg class="book__map-static decor" viewBox="0 0 600 340" role="img" aria-label={`Схема расположения: ${contacts.address}`}>
-            <rect width="600" height="340" fill="#E3EAEB" />
-            <g stroke="#CBD8DA" stroke-width="10" fill="none">
-              <path d="M-10 118 H610" />
-              <path d="M-10 250 H610" />
-              <path d="M148 -10 V350" />
-              <path d="M420 -10 V350" />
-            </g>
-            <g stroke="#D6E1E3" stroke-width="4" fill="none">
-              <path d="M-10 60 H610" /><path d="M-10 186 H610" /><path d="M-10 310 H610" />
-              <path d="M60 -10 V350" /><path d="M270 -10 V350" /><path d="M520 -10 V350" />
-            </g>
-            <g fill="#D9E3E4">
-              <rect x="176" y="30" width="70" height="60" rx="3" />
-              <rect x="300" y="146" width="86" height="70" rx="3" />
-              <rect x="452" y="46" width="64" height="52" rx="3" />
-              <rect x="86" y="270" width="52" height="46" rx="3" />
-            </g>
-            <text x="24" y="106" font-family="JetBrains Mono, monospace" font-size="11" fill="#8AA0A6" letter-spacing="1">ПРОСПЕКТ ХИМИКОВ</text>
+          <div class="book__map-frame">
+            <svg class="book__map-static decor" viewBox="0 0 600 340" role="img" aria-label={`Схема расположения: ${contacts.address}`}>
+              <rect width="600" height="340" fill="var(--map-bg)" />
+              <g stroke="var(--map-road)" stroke-width="10" fill="none">
+                <path d="M-10 118 H610" />
+                <path d="M-10 250 H610" />
+                <path d="M148 -10 V350" />
+                <path d="M420 -10 V350" />
+              </g>
+              <g stroke="var(--map-lane)" stroke-width="4" fill="none">
+                <path d="M-10 60 H610" /><path d="M-10 186 H610" /><path d="M-10 310 H610" />
+                <path d="M60 -10 V350" /><path d="M270 -10 V350" /><path d="M520 -10 V350" />
+              </g>
+              <g fill="var(--map-block)">
+                <rect x="176" y="30" width="70" height="60" rx="6" />
+                <rect x="300" y="146" width="86" height="70" rx="6" />
+                <rect x="452" y="46" width="64" height="52" rx="6" />
+                <rect x="86" y="270" width="52" height="46" rx="6" />
+              </g>
 
-            {/* Метка центра */}
-            <g transform="translate(276,196)">
-              <circle r="26" fill="#12958C" fill-opacity=".16" />
-              <circle r="13" fill="#12958C" />
-              <circle r="4.5" fill="#fff" />
-            </g>
-            <text x="300" y="240" font-family="Golos Text, sans-serif" font-size="14" font-weight="600" fill="#0B2430">АЯЗ · д. 42</text>
-          </svg>
+              {/* Метка центра */}
+              <g transform="translate(276,196)">
+                <circle r="26" fill="var(--pulse-bright)" fill-opacity=".16" />
+                <circle r="13" fill="var(--pulse-bright)" />
+                <circle r="4.5" fill="#fff" />
+              </g>
+            </svg>
+
+            {/* Подписи — обычный HTML поверх схемы: берут шрифт и кегль из
+                токенов и говорят тем же языком «стеклянных» чипов, что и
+                остальные метки поверх изображений */}
+            <span class="book__map-street eyebrow decor">проспект Химиков</span>
+            <span class="pill book__map-pin decor">
+              <span class="book__map-pin-dot" aria-hidden="true"></span>
+              АЯЗ · {contacts.addressShort}
+            </span>
+          </div>
 
           <figcaption class="book__map-actions">
             <a
@@ -166,10 +175,21 @@ const { contacts, clinic } = content;
 
   /* ─── Карта ─── */
   .book__map {
+    /* Тона схемы держим здесь, а не в разметке: подмена бренда в
+       /src/client/theme.css не должна упираться в захардкоженные хексы */
+    --map-bg: color-mix(in oklab, var(--paper) 88%, var(--ink) 4%);
+    --map-road: color-mix(in oklab, var(--map-bg) 82%, var(--ink) 12%);
+    --map-lane: color-mix(in oklab, var(--map-bg) 90%, var(--ink) 6%);
+    --map-block: color-mix(in oklab, var(--map-bg) 86%, var(--ink) 7%);
+
     margin: 0;
     border-radius: var(--r-lg);
     overflow: hidden;
     box-shadow: var(--shadow-tile);
+  }
+
+  .book__map-frame {
+    position: relative;
   }
 
   .book__map-static {
@@ -177,6 +197,39 @@ const { contacts, clinic } = content;
     width: 100%;
     height: auto;
     aspect-ratio: 600 / 340;
+  }
+
+  /* Улица — микро-метка тем же кеглем и трекингом, что и .eyebrow страницы */
+  .book__map-street {
+    position: absolute;
+    left: 4%;
+    top: 28.5%;
+    transform: translateY(-50%);
+    font-size: 0.625rem;
+    color: color-mix(in oklab, var(--ink) 42%, transparent);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* Метка центра — тот же стеклянный чип, что и поверх фото-плиток */
+  .book__map-pin {
+    position: absolute;
+    left: 46%;
+    top: 57.6%;
+    /* Ниже ореола метки (r=26 ед.), чтобы чип не срезал ему низ */
+    margin-top: 34px;
+    transform: translateX(-50%);
+    min-height: 34px;
+    padding: 0 14px;
+    box-shadow: 0 4px 14px -6px rgb(11 36 48 / 0.35);
+    pointer-events: none;
+  }
+
+  .book__map-pin-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pulse);
   }
 
   .book__map-actions {

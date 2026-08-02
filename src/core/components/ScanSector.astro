@@ -6,6 +6,44 @@
  * Один проход при загрузке → амбиентная пульсация (opacity 0.04→0.08, 6с).
  * При prefers-reduced-motion остаётся статичным.
  */
+
+// Геометрия сектора. Одни и те же числа кормят разметку, шкалу и canvas,
+// чтобы дуги, засечки и подписи не разъезжались при правках.
+const APEX = { x: 450, y: 60 };
+const HALF = 0.505; // полураствор конуса от вертикали
+const CONE = 'M450 60 L862 806 A470 470 0 0 1 38 806 Z';
+
+// Дуги глубины: шаг 130 ед. = 4 см
+const DEPTHS = [200, 330, 460, 590, 720];
+
+// Левая кромка конуса — на ней живёт шкала. Правая закрыта объектом и
+// уходит за край плитки, поэтому размечать её нечем.
+const edge = { x: -Math.sin(HALF), y: Math.cos(HALF) };
+const out = { x: -Math.cos(HALF), y: -Math.sin(HALF) }; // наружная нормаль к кромке
+
+// Последняя дуга остаётся без подписи: на десктопе она приходится на зону,
+// где плитку затягивает вуаль и начинается лид — цифра там налезала бы на текст.
+const scale = DEPTHS.slice(0, 4).map((r, i) => {
+  const px = APEX.x + edge.x * r;
+  const py = APEX.y + edge.y * r;
+  return {
+    // Единица измерения — один раз, на первой засечке: повтор «см» у каждой
+    // цифры читается как отладочный вывод, а не как шкала прибора.
+    label: i === 0 ? '4 см' : String((i + 1) * 4),
+    tick: { x1: px, y1: py, x2: px + out.x * 18, y2: py + out.y * 18 },
+    left: ((px + out.x * 30) / 900) * 100,
+    top: ((py + out.y * 30) / 900) * 100,
+  };
+});
+
+// Радиальные линии сектора — от вершины до заведомо дальней точки, обрез по клипу
+const rays = [-1, -0.5, 0, 0.5, 1].map((k) => {
+  const a = k * HALF;
+  return {
+    x: APEX.x + Math.sin(a) * 1000,
+    y: APEX.y + Math.cos(a) * 1000,
+  };
+});
 ---
 
 <div class="scan" aria-hidden="true" data-scan>
@@ -20,49 +58,71 @@
         <stop offset="100%" stop-color="var(--pulse-bright)" stop-opacity="0" />
       </radialGradient>
       <clipPath id="scanClip">
-        <path d="M450 60 L862 806 A470 470 0 0 1 38 806 Z" />
+        <path d={CONE} />
       </clipPath>
     </defs>
 
-    {/* Конус сканирования */}
+    {/* Конус сканирования. vector-effect держит толщину линий равной
+        волосяной линии интерфейса на любом размере: viewBox 900 ужимается
+        до ~480 px, и обычный stroke-width 1 давал полупиксельную кашу. */}
     <path
-      d="M450 60 L862 806 A470 470 0 0 1 38 806 Z"
+      d={CONE}
       fill="url(#scanFade)"
       stroke="var(--pulse-bright)"
-      stroke-opacity=".22"
+      stroke-opacity=".26"
       stroke-width="1"
+      vector-effect="non-scaling-stroke"
     />
 
     {/* Дуги глубины — шкала прибора */}
-    <g clip-path="url(#scanClip)" stroke="var(--pulse-bright)" stroke-opacity=".3" stroke-width="1" fill="none">
-      <circle cx="450" cy="60" r="200" />
-      <circle cx="450" cy="60" r="330" />
-      <circle cx="450" cy="60" r="460" />
-      <circle cx="450" cy="60" r="590" />
-      <circle cx="450" cy="60" r="720" />
+    <g
+      clip-path="url(#scanClip)"
+      stroke="var(--pulse-bright)"
+      stroke-opacity=".22"
+      stroke-width="1"
+      vector-effect="non-scaling-stroke"
+    >
+      {DEPTHS.map((r) => <circle cx={APEX.x} cy={APEX.y} r={r} />)}
     </g>
 
-    {/* Радиальные линии сектора */}
-    <g clip-path="url(#scanClip)" stroke="var(--pulse-bright)" stroke-opacity=".22" stroke-width="1">
-      <line x1="450" y1="60" x2="450" y2="900" />
-      <line x1="450" y1="60" x2="243" y2="880" />
-      <line x1="450" y1="60" x2="657" y2="880" />
-      <line x1="450" y1="60" x2="90" y2="760" />
-      <line x1="450" y1="60" x2="810" y2="760" />
+    {/* Радиальные линии сектора — самый тихий слой, только чтобы задать объём */}
+    <g
+      clip-path="url(#scanClip)"
+      stroke="var(--pulse-bright)"
+      stroke-opacity=".14"
+      stroke-width="1"
+      vector-effect="non-scaling-stroke"
+    >
+      {rays.map((p) => <line x1={APEX.x} y1={APEX.y} x2={p.x} y2={p.y} />)}
     </g>
 
-    {/* Метки глубины по центральной оси — язык приборной шкалы */}
-    <g fill="var(--pulse-bright)" fill-opacity=".5" font-family="var(--font-data)" font-size="15">
-      <text x="462" y="266">4 см</text>
-      <text x="462" y="396">8 см</text>
-      <text x="462" y="526">12 см</text>
-      <text x="462" y="656">16 см</text>
+    {/* Засечки глубины на левой кромке — якорь для подписей */}
+    <g
+      class="scan__ticks"
+      stroke="var(--pulse-bright)"
+      stroke-opacity=".5"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      vector-effect="non-scaling-stroke"
+    >
+      {scale.map((m) => <line x1={m.tick.x1} y1={m.tick.y1} x2={m.tick.x2} y2={m.tick.y2} />)}
     </g>
 
     {/* Датчик */}
     <rect x="426" y="26" width="48" height="14" rx="3" fill="var(--pulse-bright)" fill-opacity=".65" />
     <rect x="437" y="8" width="26" height="22" rx="4" fill="var(--ink)" fill-opacity=".28" />
   </svg>
+
+  {/* Подписи шкалы — обычный HTML, а не <text> внутри SVG: так они берут
+      кегль и трекинг из тех же токенов, что и остальные микро-метки страницы,
+      и не масштабируются вместе с viewBox до нечитаемых 8 px. */}
+  <div class="scan__scale decor">
+    {scale.map((m) => (
+      <span class="scan__mark" style={`left:${m.left.toFixed(3)}%;top:${m.top.toFixed(3)}%`}>
+        {m.label}
+      </span>
+    ))}
+  </div>
 </div>
 
 <style>
@@ -74,7 +134,8 @@
   }
 
   .scan__grid,
-  .scan__canvas {
+  .scan__canvas,
+  .scan__scale {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -90,6 +151,40 @@
     z-index: 1;
   }
 
+  /* ─── Шкала глубины ─── */
+  .scan__scale {
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    /* Проявляется после прохода развёртки — прибор сначала «видит», потом
+       подписывает */
+    animation: scan-in 700ms var(--ease) 2400ms forwards;
+  }
+
+  .scan__mark {
+    position: absolute;
+    /* Точка привязки — на кромке конуса, подпись висит слева от неё */
+    transform: translate(-100%, -50%);
+    font-family: var(--font-data);
+    font-size: 0.625rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: color-mix(in oklab, var(--pulse) 62%, transparent);
+  }
+
+  /* На узких экранах развёртка уходит за край плитки и ужимается вдвое —
+     микро-подписи там превращаются в сор */
+  @media (max-width: 700px) {
+    .scan__scale,
+    .scan__ticks {
+      display: none;
+    }
+  }
+
   @keyframes scan-in {
     to {
       opacity: 1;
@@ -97,7 +192,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .scan__grid {
+    .scan__grid,
+    .scan__scale {
       opacity: 1;
       animation: none;
     }
