@@ -24,9 +24,8 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
           style={`--reveal-delay: ${i * 60}ms`}
         >
           <article class="card prog__card">
-            {p.featured && <span class="prog__badge">Чаще всего выбирают</span>}
-
             <div class="prog__head">
+              {p.featured && <span class="prog__badge">Чаще всего выбирают</span>}
               <h3 class="prog__name t-h3">{p.name}</h3>
               <p class="prog__for t-xs">{p.for}</p>
             </div>
@@ -133,8 +132,10 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     border-color: color-mix(in oklab, #ffffff 18%, transparent);
   }
 
+  /* На тёмной карточке — светлый основной тон. Был захардкожен #ff8c6e,
+     мимо токенов: смена бренда его бы не затронула. */
   .prog__item[data-featured] .prog__price {
-    color: #ff8c6e;
+    color: var(--paper);
   }
 
   .prog__item[data-featured] .prog__save {
@@ -142,27 +143,34 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     color: var(--paper);
   }
 
+  /* Метка живёт в полосе над заголовком, а не в углу карточки. Раньше она
+     висела absolute справа сверху, а заголовку отводилось фиксированные 96px
+     справа — при метке шириной ~170px она просто ложилась на название.
+     Полосу резервируем во всех карточках, чтобы заголовки стояли на одной
+     линии, а длина текста метки больше ни на что не влияла. */
+  .prog__head {
+    position: relative;
+    padding-top: 30px;
+  }
+
   .prog__badge {
     position: absolute;
-    top: 18px;
-    right: 18px;
-    padding: 7px 14px;
+    top: 0;
+    left: 0;
+    padding: 5px 12px;
     background: var(--doppler-text);
     color: #fff;
     font-family: var(--font-data);
     font-size: 0.625rem;
-    letter-spacing: 0.08em;
+    font-weight: 500;
+    letter-spacing: var(--track-label);
     text-transform: uppercase;
     border-radius: var(--r-pill);
+    white-space: nowrap;
   }
 
   .prog__name {
     font-size: 1.4375rem;
-    padding-right: 96px;
-  }
-
-  .prog__item:not([data-featured]) .prog__name {
-    padding-right: 0;
   }
 
   .prog__for {
@@ -177,10 +185,14 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     gap: 8px 14px;
   }
 
+  /* Цена набрана как в прайс-таблице — основным тоном. Раньше здесь стоял
+     тёплый акцент, и один и тот же тип данных был окрашен на странице
+     по-разному. Тёплый тон остался за выгодой (чип «−700 ₽») и цифрой
+     промо — там он что-то значит, а не просто громкий. */
   .prog__price {
     font-size: 2rem;
     font-weight: 500;
-    color: var(--doppler);
+    color: var(--ink);
     line-height: 1;
   }
 

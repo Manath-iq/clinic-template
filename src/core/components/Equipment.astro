@@ -104,7 +104,7 @@ const { equipment } = content;
     font-size: 0.625rem;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
-    color: color-mix(in oklab, var(--paper) 55%, transparent);
+    color: var(--on-dark-soft);
   }
 
   .equip__spec dd {
@@ -142,10 +142,11 @@ const { equipment } = content;
     }
   }
 
+  /* Секция тёмная: основной --pulse даёт на ней 3.04:1 при норме 4.5 */
   .equip__point-num {
     display: block;
     font-size: 0.75rem;
-    color: var(--pulse);
+    color: var(--pulse-on-dark);
     margin-bottom: 14px;
   }
 
