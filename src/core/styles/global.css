@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+
+@import './fonts.css';
+@import './tokens.css';
+@import '../../client/theme.css';
+
+/* Токены проброшены в Tailwind, чтобы утилиты вида text-ink / bg-paper
+   работали от тех же CSS-переменных. */
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-pulse: var(--pulse);
+  --color-doppler: var(--doppler);
+  --color-hairline: var(--hairline);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-data: var(--font-data);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+
+  --ease-brand: var(--ease);
+}

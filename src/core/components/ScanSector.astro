@@ -1,0 +1,245 @@
+---
+/**
+ * Signature-элемент (п. 8.5): веерная развёртка области сканирования
+ * УЗ-датчика. SVG-геометрия + canvas-развёртка, без библиотек и видео.
+ *
+ * Один проход при загрузке → амбиентная пульсация (opacity 0.04→0.08, 6с).
+ * При prefers-reduced-motion остаётся статичным.
+ */
+---
+
+<div class="scan" aria-hidden="true" data-scan>
+  <canvas class="scan__canvas decor" data-scan-canvas width="900" height="900"></canvas>
+
+  <svg class="scan__grid decor" viewBox="0 0 900 900" fill="none" role="presentation">
+    <defs>
+      <radialGradient id="scanFade" cx="50%" cy="6%" r="96%">
+        <stop offset="0%" stop-color="var(--pulse-bright)" stop-opacity=".30" />
+        <stop offset="30%" stop-color="var(--pulse-bright)" stop-opacity=".12" />
+        <stop offset="70%" stop-color="var(--pulse-bright)" stop-opacity=".04" />
+        <stop offset="100%" stop-color="var(--pulse-bright)" stop-opacity="0" />
+      </radialGradient>
+      <clipPath id="scanClip">
+        <path d="M450 60 L862 806 A470 470 0 0 1 38 806 Z" />
+      </clipPath>
+    </defs>
+
+    {/* Конус сканирования */}
+    <path
+      d="M450 60 L862 806 A470 470 0 0 1 38 806 Z"
+      fill="url(#scanFade)"
+      stroke="var(--pulse-bright)"
+      stroke-opacity=".22"
+      stroke-width="1"
+    />
+
+    {/* Дуги глубины — шкала прибора */}
+    <g clip-path="url(#scanClip)" stroke="var(--pulse-bright)" stroke-opacity=".3" stroke-width="1" fill="none">
+      <circle cx="450" cy="60" r="200" />
+      <circle cx="450" cy="60" r="330" />
+      <circle cx="450" cy="60" r="460" />
+      <circle cx="450" cy="60" r="590" />
+      <circle cx="450" cy="60" r="720" />
+    </g>
+
+    {/* Радиальные линии сектора */}
+    <g clip-path="url(#scanClip)" stroke="var(--pulse-bright)" stroke-opacity=".22" stroke-width="1">
+      <line x1="450" y1="60" x2="450" y2="900" />
+      <line x1="450" y1="60" x2="243" y2="880" />
+      <line x1="450" y1="60" x2="657" y2="880" />
+      <line x1="450" y1="60" x2="90" y2="760" />
+      <line x1="450" y1="60" x2="810" y2="760" />
+    </g>
+
+    {/* Метки глубины по центральной оси — язык приборной шкалы */}
+    <g fill="var(--pulse-bright)" fill-opacity=".5" font-family="var(--font-data)" font-size="15">
+      <text x="462" y="266">4 см</text>
+      <text x="462" y="396">8 см</text>
+      <text x="462" y="526">12 см</text>
+      <text x="462" y="656">16 см</text>
+    </g>
+
+    {/* Датчик */}
+    <rect x="426" y="26" width="48" height="14" rx="3" fill="var(--pulse-bright)" fill-opacity=".65" />
+    <rect x="437" y="8" width="26" height="22" rx="4" fill="var(--ink)" fill-opacity=".28" />
+  </svg>
+</div>
+
+<style>
+  .scan {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    isolation: isolate;
+  }
+
+  .scan__grid,
+  .scan__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .scan__grid {
+    opacity: 0;
+    animation: scan-in 1400ms var(--ease) 400ms forwards;
+  }
+
+  .scan__canvas {
+    z-index: 1;
+  }
+
+  @keyframes scan-in {
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scan__grid {
+      opacity: 1;
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-scan]');
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-scan-canvas]');
+
+  if (root && canvas) {
+    const ctx = canvas.getContext('2d');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Геометрия сектора — та же, что у SVG-конуса в разметке выше:
+    // вершина (450,60), кромки в (38,806) и (862,806), дуга r=470 с центром (450,580).
+    const APEX = { x: 450, y: 60 };
+    const ARC = { x: 450, y: 580, r: 470, a1: 0.502, a2: 2.639 };
+    const HALF_ANGLE = 0.505; // полураствор конуса от вертикали
+    const R_MIN = 60;
+    const R_MAX = 990;
+
+    // Ось Y в canvas смотрит вниз, поэтому «вниз» — это +π/2.
+    // Развёртка идёт слева направо: от угла с отрицательным cos к положительному.
+    const A_START = Math.PI / 2 + HALF_ANGLE; // левая кромка
+    const A_END = Math.PI / 2 - HALF_ANGLE; // правая кромка
+
+    // Область сканирования — спеклы за её пределы не выходят
+    const clipSector = (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.moveTo(APEX.x, APEX.y);
+      ctx.lineTo(862, 806);
+      ctx.arc(ARC.x, ARC.y, ARC.r, ARC.a1, ARC.a2);
+      ctx.closePath();
+      ctx.clip();
+    };
+
+    // Стабильный псевдослучайный «спекл» — текстура B-режима
+    let seed = 20260802;
+    const rand = () => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296;
+      return seed / 4294967296;
+    };
+
+    const specks = Array.from({ length: 620 }, () => {
+      const a = A_START + rand() * (A_END - A_START);
+      const r = R_MIN + Math.sqrt(rand()) * (R_MAX - R_MIN);
+      return {
+        a,
+        r,
+        size: 1.2 + rand() * 5,
+        alpha: 0.18 + rand() * 0.62,
+      };
+    });
+
+    const resize = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const box = root.getBoundingClientRect();
+      canvas.width = Math.round(box.width * dpr);
+      canvas.height = Math.round(box.height * dpr);
+    };
+
+    const draw = (sweep: number, ambient: number) => {
+      if (!ctx) return;
+      const scale = canvas.width / 900;
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.clearRect(0, 0, 900, 900);
+
+      const pulse = getComputedStyle(root).getPropertyValue('--pulse-bright').trim() || '#12958C';
+
+      ctx.save();
+      clipSector(ctx);
+
+      // Спеклы проявляются по мере прохода развёртки
+      for (const s of specks) {
+        const t = (s.a - A_START) / (A_END - A_START);
+        const revealed = sweep >= t ? 1 : Math.max(0, 1 - (t - sweep) * 14);
+        if (revealed <= 0.01) continue;
+
+        const x = APEX.x + Math.cos(s.a) * s.r;
+        const y = APEX.y + Math.sin(s.a) * s.r;
+        const depthFade = 1 - (s.r - R_MIN) / (R_MAX - R_MIN);
+
+        ctx.globalAlpha = s.alpha * revealed * (0.25 + depthFade * 0.75) * ambient;
+        ctx.fillStyle = pulse;
+        ctx.beginPath();
+        ctx.arc(x, y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Линия развёртки — видна только во время прохода
+      if (sweep > 0 && sweep < 1) {
+        const a = A_START + sweep * (A_END - A_START);
+        const grad = ctx.createLinearGradient(
+          APEX.x,
+          APEX.y,
+          APEX.x + Math.cos(a) * R_MAX,
+          APEX.y + Math.sin(a) * R_MAX
+        );
+        grad.addColorStop(0, pulse);
+        grad.addColorStop(1, 'transparent');
+
+        ctx.globalAlpha = 0.55;
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(APEX.x, APEX.y);
+        ctx.lineTo(APEX.x + Math.cos(a) * R_MAX, APEX.y + Math.sin(a) * R_MAX);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    };
+
+    resize();
+    addEventListener('resize', resize, { passive: true });
+
+    if (reduced) {
+      draw(1, 1);
+    } else {
+      const SWEEP_MS = 2200;
+      const started = performance.now() + 500;
+
+      const frame = (now: number) => {
+        const elapsed = now - started;
+
+        if (elapsed < SWEEP_MS) {
+          const p = Math.max(0, elapsed / SWEEP_MS);
+          draw(1 - Math.pow(1 - p, 3), 1);
+          requestAnimationFrame(frame);
+          return;
+        }
+
+        // Амбиентная пульсация: единственное, что движется бесконечно (п. 9)
+        const phase = ((elapsed - SWEEP_MS) % 6000) / 6000;
+        const ambient = 0.72 + 0.28 * Math.sin(phase * Math.PI * 2);
+        draw(1, ambient);
+        requestAnimationFrame(frame);
+      };
+
+      requestAnimationFrame(frame);
+    }
+  }
+</script>

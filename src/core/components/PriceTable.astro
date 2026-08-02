@@ -1,0 +1,281 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+import SectionHead from './SectionHead.astro';
+
+const { services, groups, legal } = content;
+const tabs = groups.filter((g) => g.id !== 'all');
+const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+---
+
+<section class="section" id="price">
+  <div class="container">
+    <SectionHead
+      index="09"
+      eyebrow="Цены"
+      title="Прайс без «от»"
+      lead="Указана итоговая стоимость исследования вместе с заключением и снимками. Доплат за протокол, распечатку и консультацию по результату нет."
+    />
+
+    {/* Табы */}
+    <div class="price__tabs" role="tablist" aria-label="Разделы прайса" data-reveal>
+      <div class="scroll-x price__tabs-scroll">
+        {tabs.map((t, i) => (
+          <button
+            type="button"
+            class="price__tab"
+            role="tab"
+            id={`tab-${t.id}`}
+            aria-controls={`panel-${t.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            data-price-tab={t.id}
+          >
+            {t.name}
+          </button>
+        ))}
+      </div>
+      <span class="price__tab-underline" data-price-underline aria-hidden="true"></span>
+    </div>
+
+    {/* Панели */}
+    {tabs.map((t, i) => (
+      <div
+        class="price__panel"
+        role="tabpanel"
+        id={`panel-${t.id}`}
+        aria-labelledby={`tab-${t.id}`}
+        data-price-panel={t.id}
+        hidden={i !== 0}
+      >
+        <ul class="price__rows">
+          {services
+            .filter((s) => s.group === t.id)
+            .map((s) => (
+              <li class="price__row">
+                <div class="price__cell-name">
+                  <span class="price__name">{s.name}</span>
+                  {s.note && <span class="price__note t-xs">{s.note}</span>}
+                </div>
+                <span class="price__cell-time data t-xs">{s.duration} мин</span>
+                <span class="price__cell-price data data-price">{fmt(s.price)} ₽</span>
+                <button
+                  type="button"
+                  class="price__cell-book"
+                  data-book-open
+                  data-service={s.id}
+                  aria-label={`Записаться: ${s.name}`}
+                >
+                  Записаться
+                </button>
+              </li>
+            ))}
+        </ul>
+      </div>
+    ))}
+
+    <div class="price__foot" data-reveal>
+      <a href={url("/price")} class="btn btn-ghost" data-goal="price_open">Открыть полный прайс</a>
+      <p class="price__disclaimer t-xs">{legal.offer}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── Табы ─── */
+  .price__tabs {
+    position: relative;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 8px;
+  }
+
+  .price__tabs-scroll {
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    gap: 0;
+  }
+
+  @media (min-width: 900px) {
+    .price__tabs-scroll {
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+
+  .price__tab {
+    flex: none;
+    padding: 16px 20px;
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
+    white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .price__tab:first-child {
+    padding-left: 0;
+  }
+
+  .price__tab:hover {
+    color: var(--ink);
+  }
+
+  .price__tab[aria-selected='true'] {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* Подчёркивание переезжает между табами, 220мс */
+  .price__tab-underline {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--pulse);
+    transition: transform 220ms var(--ease), width 220ms var(--ease);
+  }
+
+  /* ─── Строки ─── */
+  .price__rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .price__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name price'
+      'time book';
+    align-items: center;
+    gap: 8px 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  @media (min-width: 780px) {
+    .price__row {
+      grid-template-columns: minmax(0, 1fr) 90px 120px 130px;
+      grid-template-areas: 'name time price book';
+      gap: 24px;
+      padding: 18px 0;
+    }
+  }
+
+  .price__cell-name {
+    grid-area: name;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .price__name {
+    font-size: var(--t-body);
+    line-height: 1.35;
+  }
+
+  .price__note {
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  .price__cell-time {
+    grid-area: time;
+    color: var(--ink-soft);
+  }
+
+  @media (min-width: 780px) {
+    .price__cell-time {
+      text-align: right;
+    }
+  }
+
+  .price__cell-price {
+    grid-area: price;
+    font-size: 1.125rem;
+    font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .price__cell-book {
+    grid-area: book;
+    justify-self: end;
+    min-height: 36px;
+    font-size: var(--t-xs);
+    font-weight: 500;
+    color: var(--pulse);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+
+  .price__cell-book:hover {
+    border-bottom-color: currentColor;
+  }
+
+  /* ─── Низ ─── */
+  .price__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px 32px;
+    margin-top: 40px;
+  }
+
+  .price__disclaimer {
+    flex: 1 1 320px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+</style>
+
+<script>
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-price-tab]'));
+  const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-price-panel]'));
+  const underline = document.querySelector<HTMLElement>('[data-price-underline]');
+
+  if (tabs.length && underline) {
+    const moveUnderline = (tab: HTMLButtonElement) => {
+      underline.style.width = `${tab.offsetWidth}px`;
+      underline.style.transform = `translateX(${tab.offsetLeft}px)`;
+    };
+
+    const select = (tab: HTMLButtonElement, focus = true) => {
+      const id = tab.dataset.priceTab;
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+      });
+      panels.forEach((p) => {
+        p.hidden = p.dataset.pricePanel !== id;
+      });
+      moveUnderline(tab);
+      if (focus) tab.focus();
+    };
+
+    tabs.forEach((tab) => tab.addEventListener('click', () => select(tab, false)));
+
+    // Стрелки влево/вправо — требование по клавиатуре (п. 12)
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('keydown', (e) => {
+        let next: number | null = null;
+        if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+        if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+        if (e.key === 'Home') next = 0;
+        if (e.key === 'End') next = tabs.length - 1;
+        if (next === null) return;
+        e.preventDefault();
+        select(tabs[next]);
+      });
+    });
+
+    const initial = tabs.find((t) => t.getAttribute('aria-selected') === 'true') || tabs[0];
+    requestAnimationFrame(() => moveUnderline(initial));
+    addEventListener('resize', () => {
+      const current = tabs.find((t) => t.getAttribute('aria-selected') === 'true');
+      if (current) moveUnderline(current);
+    });
+  }
+</script>

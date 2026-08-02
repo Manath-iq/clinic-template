@@ -1,0 +1,284 @@
+---
+import { url } from '../core/lib/url';
+import Page from '../core/layouts/Page.astro';
+import content from '../client/content.json';
+
+const { clinic, contacts, legal, doctors } = content;
+const { license } = clinic;
+---
+
+<Page
+  title={`Лицензия и реквизиты | ${clinic.nameFull}`}
+  description="Медицинская лицензия центра ультразвуковой диагностики «АЯЗ»: номер, дата, орган выдачи, перечень видов работ, реквизиты юридического лица."
+  h1="Лицензия и реквизиты"
+  lead="Сведения публикуются в соответствии с Правилами предоставления платных медицинских услуг (ПП РФ № 736 от 11.05.2023)."
+>
+  <div class="lic">
+    <div class="lic__main">
+      <section>
+        <h2 class="t-h3">Медицинская лицензия</h2>
+        <dl class="lic__facts">
+          <div>
+            <dt>Номер</dt>
+            <dd class="data">{license.number}</dd>
+          </div>
+          <div>
+            <dt>Дата выдачи</dt>
+            <dd class="data">{license.date}</dd>
+          </div>
+          <div>
+            <dt>Орган, выдавший лицензию</dt>
+            <dd>{license.issuedBy}</dd>
+          </div>
+          <div>
+            <dt>Срок действия</dt>
+            <dd>Бессрочно</dd>
+          </div>
+        </dl>
+
+        <h3 class="lic__sub">Перечень работ (услуг)</h3>
+        <ul class="lic__works">
+          {license.works.map((w) => <li>{w}</li>)}
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="t-h3">Реквизиты юридического лица</h2>
+        <dl class="lic__facts">
+          <div>
+            <dt>Полное наименование</dt>
+            <dd>{clinic.legalName}</dd>
+          </div>
+          <div>
+            <dt>ИНН</dt>
+            <dd class="data">{clinic.inn}</dd>
+          </div>
+          <div>
+            <dt>ОГРН</dt>
+            <dd class="data">{clinic.ogrn}</dd>
+          </div>
+          <div>
+            <dt>Юридический адрес</dt>
+            <dd>{clinic.legalAddress}</dd>
+          </div>
+          <div>
+            <dt>Адрес оказания услуг</dt>
+            <dd>{contacts.address}</dd>
+          </div>
+          <div>
+            <dt>Телефон</dt>
+            <dd>
+              <a href={`tel:${contacts.phoneRaw}`} class="data lic__link">{contacts.phone}</a>
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section>
+        <h2 class="t-h3">Сроки ожидания и порядок обращений</h2>
+        <p class="lic__text">{legal.waitTime}</p>
+        <p class="lic__text">{legal.claims}</p>
+      </section>
+
+      <section>
+        <h2 class="t-h3">Квалификация медицинских работников</h2>
+        <ul class="lic__docs">
+          {doctors.map((d) => (
+            <li>
+              <p class="lic__doc-name">{d.nameFull}</p>
+              <p class="lic__doc-meta t-sm">
+                {d.position} · {d.category} · стаж <span class="data">{d.experience}</span> лет
+              </p>
+              <p class="lic__doc-edu t-xs">{d.education}. {d.extra}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="t-h3">Стандарты и клинические рекомендации</h2>
+        <ul class="lic__links">
+          {legal.standards.map((s) => (
+            <li>
+              <a href={s.url} target="_blank" rel="noopener nofollow" class="lic__link">
+                {s.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+
+    <aside class="lic__aside">
+      <figure class="lic__scan">
+        <img
+          src={url(license.scanUrl)}
+          alt="Макет медицинской лицензии центра «АЯЗ» с пометкой «Образец»"
+          width="840"
+          height="1188"
+          loading="lazy"
+          data-a11y-keep
+        />
+        <figcaption class="t-xs">
+          Демонстрационный макет. На боевом проекте здесь размещается скан действующей лицензии.
+        </figcaption>
+      </figure>
+
+      <p class="lic__warning t-sm">{legal.warning}</p>
+    </aside>
+  </div>
+</Page>
+
+<style>
+  .lic {
+    display: grid;
+    gap: 48px;
+  }
+
+  @media (min-width: 960px) {
+    .lic {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+      gap: 64px;
+      align-items: start;
+    }
+  }
+
+  .lic__main section + section {
+    margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .lic__facts {
+    display: grid;
+    gap: 22px;
+    margin: 28px 0 0;
+  }
+
+  @media (min-width: 640px) {
+    .lic__facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px 40px;
+    }
+  }
+
+  .lic__facts dt {
+    font-family: var(--font-data);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .lic__facts dd {
+    margin: 8px 0 0;
+    font-size: var(--t-body);
+    line-height: 1.5;
+  }
+
+  .lic__sub {
+    margin-top: 40px;
+    font-size: 1.0625rem;
+    font-weight: 500;
+  }
+
+  .lic__works,
+  .lic__links {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lic__works li,
+  .lic__links li {
+    position: relative;
+    padding-left: 22px;
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
+  }
+
+  .lic__works li::before,
+  .lic__links li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.68em;
+    width: 8px;
+    height: 1px;
+    background: var(--pulse);
+  }
+
+  .lic__link {
+    color: var(--pulse);
+    border-bottom: 1px solid currentColor;
+  }
+
+  .lic__text {
+    margin-top: 18px;
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 72ch;
+  }
+
+  .lic__docs {
+    display: grid;
+    gap: 1px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+    background: var(--hairline);
+    border-block: 1px solid var(--hairline);
+  }
+
+  .lic__docs li {
+    background: var(--paper);
+    padding: 20px 0;
+  }
+
+  .lic__doc-name {
+    font-weight: 500;
+  }
+
+  .lic__doc-meta {
+    margin-top: 6px;
+    color: var(--pulse);
+  }
+
+  .lic__doc-edu {
+    margin-top: 8px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  /* ─── Сайдбар ─── */
+  .lic__scan {
+    margin: 0;
+  }
+
+  .lic__scan img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+  }
+
+  .lic__scan figcaption {
+    margin-top: 14px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  .lic__warning {
+    margin-top: 28px;
+    padding: 18px 20px;
+    border: 1px solid var(--hairline);
+    border-left: 2px solid var(--pulse);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+</style>

@@ -1,0 +1,427 @@
+---
+import content from '../../client/content.json';
+import SectionHead from './SectionHead.astro';
+
+const { services, groups } = content;
+const VISIBLE = 8;
+
+const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+---
+
+<section class="section" id="services">
+  <div class="container">
+    <SectionHead
+      index="02"
+      eyebrow="Подбор исследования"
+      title="Найдите своё исследование"
+      lead="Введите название или орган — например, «печень» или «щитовидка». Если не уверены, что нужно, выберите зону тела фильтром."
+    />
+
+    {/* Поиск + фильтры */}
+    <div class="picker__controls" data-reveal>
+      <div class="picker__search">
+        <svg
+          class="picker__search-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+        <label class="sr-only" for="service-search">Поиск исследования</label>
+        <input
+          type="search"
+          id="service-search"
+          class="picker__input"
+          placeholder="Печень, щитовидка, сосуды шеи…"
+          autocomplete="off"
+          data-picker-search
+        />
+        <button type="button" class="picker__clear" data-picker-clear hidden aria-label="Очистить поиск">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="scroll-x picker__filters" role="group" aria-label="Фильтр по зоне">
+        {groups.map((g, i) => (
+          <button
+            type="button"
+            class="chip"
+            data-picker-filter={g.id}
+            aria-pressed={i === 0 ? 'true' : 'false'}
+          >
+            {g.name}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* Карточки */}
+    <ul class="picker__list" data-picker-list>
+      {services.map((s, i) => (
+        <li
+          class="picker__item"
+          data-service-card
+          data-group={s.group}
+          data-name={`${s.name} ${s.note ?? ''}`.toLowerCase()}
+          data-hidden-initial={i >= VISIBLE ? 'true' : undefined}
+          hidden={i >= VISIBLE}
+          data-reveal={i < VISIBLE ? '' : undefined}
+          style={i < VISIBLE ? `--reveal-delay: ${i * 60}ms` : undefined}
+        >
+          <article class="card card-hover picker__card">
+            <div class="picker__card-top">
+              <h3 class="picker__name">{s.name}</h3>
+              {s.note && <p class="picker__note t-xs">{s.note}</p>}
+            </div>
+
+            <div class="picker__meta">
+              <span class="picker__meta-item data" title="Длительность">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                </svg>
+                {s.duration} мин
+              </span>
+              {s.needsPrep ? (
+                <span class="picker__meta-item picker__meta-item--prep" title="Требуется подготовка">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M12 9v4M12 17h.01" /><circle cx="12" cy="12" r="9" />
+                  </svg>
+                  <a href="#prep">Нужна подготовка</a>
+                </span>
+              ) : (
+                <span class="picker__meta-item">Без подготовки</span>
+              )}
+            </div>
+
+            <div class="picker__foot">
+              <p class="picker__price data data-price">{fmt(s.price)} <span>₽</span></p>
+              <button
+                type="button"
+                class="picker__book"
+                data-book-open
+                data-service={s.id}
+                aria-label={`Записаться: ${s.name}`}
+              >
+                Записаться
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          </article>
+        </li>
+      ))}
+    </ul>
+
+    <p class="picker__empty" data-picker-empty hidden>
+      По запросу ничего не нашлось. Позвоните — администратор подскажет, какое исследование подойдёт.
+    </p>
+
+    <div class="picker__more">
+      <button type="button" class="btn btn-ghost" data-picker-more>
+        Показать все исследования
+        <span class="data">({services.length})</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ─── Управление ─── */
+  .picker__controls {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  @media (min-width: 900px) {
+    .picker__controls {
+      grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+      align-items: center;
+      gap: 24px;
+    }
+  }
+
+  .picker__search {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .picker__search-icon {
+    position: absolute;
+    left: 16px;
+    color: var(--ink-soft);
+    pointer-events: none;
+  }
+
+  .picker__input {
+    width: 100%;
+    min-height: 52px;
+    padding: 0 44px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    font: inherit;
+    font-size: var(--t-sm);
+    color: var(--ink);
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+
+  .picker__input::placeholder {
+    color: var(--ink-soft);
+  }
+
+  .picker__input:focus {
+    border-color: var(--pulse);
+    outline-offset: 1px;
+  }
+
+  .picker__input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .picker__clear {
+    position: absolute;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: var(--ink-soft);
+    border-radius: 50%;
+  }
+
+  .picker__clear:hover {
+    color: var(--ink);
+  }
+
+  .picker__filters {
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+  }
+
+  @media (min-width: 900px) {
+    .picker__filters {
+      margin-inline: 0;
+      padding-inline: 0;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* ─── Список ─── */
+  .picker__list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 700px) {
+    .picker__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1080px) {
+    .picker__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .picker__card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    height: 100%;
+    padding: 24px;
+  }
+
+  .picker__name {
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+  }
+
+  .picker__note {
+    margin-top: 8px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  .picker__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: auto;
+    font-size: var(--t-xs);
+    color: var(--ink-soft);
+  }
+
+  .picker__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .picker__meta-item--prep {
+    color: var(--pulse);
+  }
+
+  .picker__meta-item--prep a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  .picker__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .picker__price {
+    font-size: 1.375rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .picker__price span {
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+
+  .picker__book {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding-left: 4px;
+    font-size: var(--t-xs);
+    font-weight: 500;
+    color: var(--pulse);
+    transition: gap var(--dur-fast) var(--ease);
+  }
+
+  .picker__book:hover {
+    gap: 12px;
+  }
+
+  .picker__empty {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: var(--t-sm);
+  }
+
+  .picker__more {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .picker__more .btn span {
+    color: var(--ink-soft);
+    font-size: var(--t-xs);
+  }
+
+  .picker__more .btn:hover span {
+    color: inherit;
+  }
+</style>
+
+<script>
+  const list = document.querySelector<HTMLElement>('[data-picker-list]');
+  const search = document.querySelector<HTMLInputElement>('[data-picker-search]');
+  const clearBtn = document.querySelector<HTMLButtonElement>('[data-picker-clear]');
+  const moreBtn = document.querySelector<HTMLButtonElement>('[data-picker-more]');
+  const empty = document.querySelector<HTMLElement>('[data-picker-empty]');
+  const filters = document.querySelectorAll<HTMLButtonElement>('[data-picker-filter]');
+
+  if (list && search && moreBtn && empty) {
+    const cards = Array.from(list.querySelectorAll<HTMLElement>('[data-service-card]'));
+    let group = 'all';
+    let expanded = false;
+    let firstRun = true;
+
+    const apply = () => {
+      const q = search.value.trim().toLowerCase();
+      // Поиск и фильтр всегда показывают полный результат, без «показать все»
+      const limited = !expanded && !q && group === 'all';
+      let shown = 0;
+
+      for (const card of cards) {
+        const matchGroup = group === 'all' || card.dataset.group === group;
+        const matchQuery = !q || (card.dataset.name || '').includes(q);
+        const match = matchGroup && matchQuery;
+
+        if (match && (!limited || shown < 8)) {
+          card.hidden = false;
+          shown++;
+          // После взаимодействия карточки показываются сразу, без ожидания скролла
+          if (!firstRun) card.classList.add('is-visible');
+        } else {
+          card.hidden = true;
+        }
+      }
+
+      const total = cards.filter((c) => {
+        const mg = group === 'all' || c.dataset.group === group;
+        const mq = !q || (c.dataset.name || '').includes(q);
+        return mg && mq;
+      }).length;
+
+      empty.hidden = total > 0;
+      moreBtn.parentElement!.hidden = !limited || total <= 8;
+      clearBtn!.hidden = !search.value;
+      firstRun = false;
+    };
+
+    search.addEventListener('input', apply);
+
+    clearBtn?.addEventListener('click', () => {
+      search.value = '';
+      search.focus();
+      apply();
+    });
+
+    filters.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        group = btn.dataset.pickerFilter || 'all';
+        filters.forEach((b) =>
+          b.setAttribute('aria-pressed', String(b === btn))
+        );
+        apply();
+      });
+    });
+
+    moreBtn.addEventListener('click', () => {
+      expanded = true;
+      apply();
+    });
+
+    apply();
+  }
+</script>

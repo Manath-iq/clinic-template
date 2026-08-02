@@ -1,0 +1,87 @@
+---
+import { url } from '../lib/url';
+import Base from './Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BookingModal from '../components/BookingModal.astro';
+import StickyBar from '../components/StickyBar.astro';
+import CookieBanner from '../components/CookieBanner.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  h1: string;
+  lead?: string;
+  noindex?: boolean;
+}
+
+const { title, description, h1, lead, noindex } = Astro.props;
+---
+
+<Base title={title} description={description} noindex={noindex}>
+  <Header />
+
+  <main id="main">
+    <div class="page-head">
+      <div class="container">
+        <nav class="crumbs" aria-label="Хлебные крошки">
+          <a href={url("/")}>Главная</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{h1}</span>
+        </nav>
+        <h1 class="t-h2 page-head__title">{h1}</h1>
+        {lead && <p class="t-lead page-head__lead">{lead}</p>}
+      </div>
+    </div>
+
+    <div class="container page-body">
+      <slot />
+    </div>
+  </main>
+
+  <Footer />
+  <BookingModal />
+  <StickyBar />
+  <CookieBanner />
+</Base>
+
+<style>
+  .page-head {
+    padding-block: 40px 48px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+  }
+
+  .crumbs a {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .crumbs a:hover {
+    color: var(--pulse);
+    border-bottom-color: currentColor;
+  }
+
+  .page-head__title {
+    max-width: 20ch;
+  }
+
+  .page-head__lead {
+    margin-top: 20px;
+    max-width: 62ch;
+  }
+
+  .page-body {
+    padding-block: 56px 96px;
+  }
+</style>

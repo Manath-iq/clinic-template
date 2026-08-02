@@ -1,0 +1,157 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+import WaveDivider from './WaveDivider.astro';
+
+const { equipment } = content;
+---
+
+{/* Единственная тёмная секция на странице — визуальный «B-режим» (п. 8.2) */}
+<section class="section dark-section equip" id="equipment">
+  <div class="container">
+    <div class="equip__grid">
+      <div class="equip__intro">
+        <p class="section-index">
+          <span>05</span>
+          <span>{equipment.eyebrow}</span>
+        </p>
+        <h2 class="t-h2" data-reveal>{equipment.title}</h2>
+        <p class="t-lead equip__lead" data-reveal>{equipment.lead}</p>
+
+        <dl class="equip__specs" data-reveal>
+          {equipment.specs.map((s) => (
+            <div class="equip__spec">
+              <dt>{s.label}</dt>
+              <dd class="data">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {/* Кабинет с аппаратом — конкретика вместо схемы (п. 7 ТЗ) */}
+      <figure class="equip__photo">
+        <img
+          src={url("/img/equipment-room.webp")}
+          alt="Кабинет ультразвуковой диагностики центра «АЯЗ» в Нижнекамске с аппаратом Mindray DC-70"
+          width="1400"
+          height="933"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+    </div>
+
+    <WaveDivider dark amplitude={0.6} />
+
+    <ul class="equip__points">
+      {equipment.points.map((p, i) => (
+        <li class="equip__point" data-reveal style={`--reveal-delay: ${i * 70}ms`}>
+          <span class="equip__point-num data">{String(i + 1).padStart(2, '0')}</span>
+          <h3 class="equip__point-title">{p.title}</h3>
+          <p class="equip__point-text">{p.text}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .equip {
+    overflow: hidden;
+  }
+
+  .equip__grid {
+    display: grid;
+    gap: 40px;
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .equip__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 56px;
+    }
+  }
+
+  .equip__lead {
+    margin-top: 22px;
+    max-width: 52ch;
+  }
+
+  .equip__specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 32px 0 0;
+  }
+
+  .equip__spec {
+    padding: 14px 20px;
+    border: 1px solid var(--hairline-dark);
+    border-radius: var(--r-sm);
+  }
+
+  .equip__spec dt {
+    font-family: var(--font-data);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--paper) 55%, transparent);
+  }
+
+  .equip__spec dd {
+    margin: 6px 0 0;
+    font-size: 1.0625rem;
+    font-weight: 500;
+  }
+
+  .equip__photo {
+    margin: 0;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--hairline-dark);
+  }
+
+  .equip__photo img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  /* ─── Три пункта ─── */
+  .equip__points {
+    display: grid;
+    gap: 32px;
+    margin: 40px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 820px) {
+    .equip__points {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 48px;
+    }
+  }
+
+  .equip__point-num {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--pulse);
+    margin-bottom: 14px;
+  }
+
+  .equip__point-title {
+    font-size: 1.1875rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+
+  .equip__point-text {
+    margin-top: 12px;
+    font-size: var(--t-sm);
+    line-height: 1.55;
+    color: color-mix(in oklab, var(--paper) 66%, transparent);
+  }
+</style>

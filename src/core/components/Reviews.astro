@@ -1,0 +1,198 @@
+---
+import content from '../../client/content.json';
+import SectionHead from './SectionHead.astro';
+
+const { reviews } = content;
+
+const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
+---
+
+<section class="section" id="reviews">
+  <div class="container">
+    <SectionHead
+      index="10"
+      eyebrow="Отзывы"
+      title="Что пишут пациенты"
+      lead="Оценки собраны с внешних площадок — их нельзя отредактировать на нашей стороне. Ниже несколько последних."
+    />
+
+    <div class="rev__grid">
+      {/* Сводка по агрегаторам */}
+      <aside class="rev__summary card" data-reveal>
+        <p class="rev__rating data">{reviews.rating.toFixed(1)}</p>
+        <p class="rev__stars" aria-hidden="true">★★★★★</p>
+        <p class="rev__count t-xs">
+          <span class="data">{reviews.count}</span> оценок на трёх площадках
+        </p>
+
+        <ul class="rev__sources">
+          {reviews.sources.map((s) => (
+            <li>
+              <span class="rev__source-name">{s.name}</span>
+              <span class="rev__source-val data">
+                {s.rating.toFixed(1)}
+                <span class="rev__source-count">/ {s.count}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <p class="rev__note t-xs">
+          Виджет агрегатора подключается на боевом проекте — в демо показаны обезличенные примеры.
+        </p>
+      </aside>
+
+      {/* Карточки отзывов */}
+      <ul class="rev__list">
+        {reviews.items.map((r, i) => (
+          <li class="rev__item card" data-reveal style={`--reveal-delay: ${i * 60}ms`}>
+            <div class="rev__head">
+              <div>
+                <p class="rev__author">{r.author}</p>
+                <p class="rev__meta t-xs">
+                  <span class="data">{r.date}</span> · {r.source}
+                </p>
+              </div>
+              <p class="rev__item-stars" aria-label={`Оценка ${r.rating} из 5`}>
+                <span aria-hidden="true">{stars(r.rating)}</span>
+              </p>
+            </div>
+            <p class="rev__text">{r.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rev__grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  @media (min-width: 960px) {
+    .rev__grid {
+      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+  }
+
+  /* ─── Сводка ─── */
+  .rev__summary {
+    padding: 28px;
+    position: sticky;
+    top: 96px;
+  }
+
+  .rev__rating {
+    font-size: 3.5rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .rev__stars {
+    margin-top: 10px;
+    color: var(--pulse);
+    letter-spacing: 0.14em;
+    font-size: 1rem;
+  }
+
+  .rev__count {
+    margin-top: 8px;
+    color: var(--ink-soft);
+  }
+
+  .rev__sources {
+    display: grid;
+    gap: 12px;
+    margin: 24px 0 0;
+    padding: 20px 0 0;
+    list-style: none;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .rev__sources li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: var(--t-sm);
+  }
+
+  .rev__source-name {
+    color: var(--ink-soft);
+  }
+
+  .rev__source-val {
+    font-weight: 500;
+  }
+
+  .rev__source-count {
+    color: var(--ink-soft);
+    font-weight: 400;
+    font-size: var(--t-xs);
+  }
+
+  .rev__note {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  /* ─── Список ─── */
+  .rev__list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 700px) {
+    .rev__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .rev__item {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 26px;
+  }
+
+  .rev__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .rev__author {
+    font-weight: 500;
+    font-size: var(--t-body);
+  }
+
+  .rev__meta {
+    margin-top: 5px;
+    color: var(--ink-soft);
+  }
+
+  .rev__item-stars {
+    flex: none;
+    color: var(--pulse);
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+  }
+
+  .rev__text {
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+</style>

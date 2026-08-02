@@ -1,0 +1,20 @@
+{
+  "name": "ayaz-clinic",
+  "version": "1.0.0",
+  "description": "Лендинг центра УЗИ-диагностики «АЯЗ» — демо-шаблон",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.1.6",
+    "tailwindcss": "^4.3.3"
+  }
+}

@@ -1,0 +1,262 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+
+const { b2b, contacts } = content;
+---
+
+<section class="section-tight" id="corporate">
+  <div class="container">
+    <details class="b2b" data-reveal>
+      <summary class="b2b__summary">
+        <span class="b2b__index data">12</span>
+        <span class="b2b__head">
+          <span class="b2b__eyebrow eyebrow">{b2b.eyebrow}</span>
+          <span class="b2b__title">{b2b.title}</span>
+        </span>
+        <span class="b2b__toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
+      </summary>
+
+      <div class="b2b__body">
+        <div class="b2b__text">
+          <p class="t-lead">{b2b.text}</p>
+          <ul class="b2b__points">
+            {b2b.points.map((p) => (
+              <li>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <path d="m5 13 4 4L19 7" />
+                </svg>
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <form class="b2b__form" data-b2b-form novalidate>
+          <p class="b2b__form-title">Запрос коммерческого предложения</p>
+
+          <label class="field">
+            <span class="field__label">Компания</span>
+            <input type="text" name="company" class="field__input" required autocomplete="organization" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Контактное лицо</span>
+            <input type="text" name="name" class="field__input" required autocomplete="name" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Телефон</span>
+            <input
+              type="tel"
+              name="phone"
+              class="field__input"
+              inputmode="tel"
+              placeholder="+7 (___) ___-__-__"
+              required
+              autocomplete="tel"
+              data-phone-mask
+            />
+          </label>
+
+          <label class="field field--check">
+            <input type="checkbox" name="consent" required data-b2b-consent />
+            <span class="t-xs">
+              Согласен(на) на обработку персональных данных и ознакомлен(а) с
+              <a href={url("/privacy")}>Политикой</a>
+            </span>
+          </label>
+
+          {/* Honeypot против спам-ботов */}
+          <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <button type="submit" class="btn btn-primary" disabled data-b2b-submit>
+            Отправить запрос
+          </button>
+
+          <p class="b2b__form-note t-xs">
+            Или напишите на <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+          </p>
+
+          <p class="b2b__status t-sm" data-b2b-status hidden role="status"></p>
+        </form>
+      </div>
+    </details>
+  </div>
+</section>
+
+<style>
+  .b2b {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .b2b__summary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 32px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .b2b__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .b2b__index {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .b2b__title {
+    display: block;
+    margin-top: 6px;
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  .b2b__toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    color: var(--ink-soft);
+    transition: transform var(--dur) var(--ease), border-color var(--dur-fast) var(--ease);
+  }
+
+  .b2b__summary:hover .b2b__toggle {
+    border-color: var(--pulse);
+    color: var(--pulse);
+  }
+
+  .b2b[open] .b2b__toggle {
+    transform: rotate(45deg);
+  }
+
+  .b2b__body {
+    display: grid;
+    gap: 32px;
+    padding: 8px 32px 36px;
+    border-top: 1px solid var(--hairline);
+    margin-top: 4px;
+    padding-top: 32px;
+  }
+
+  @media (min-width: 900px) {
+    .b2b__body {
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+      gap: 56px;
+    }
+  }
+
+  .b2b__points {
+    display: grid;
+    gap: 12px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .b2b__points li {
+    display: grid;
+    grid-template-columns: 15px 1fr;
+    gap: 12px;
+    align-items: start;
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  .b2b__points svg {
+    margin-top: 5px;
+    color: var(--pulse);
+  }
+
+  /* ─── Форма ─── */
+  .b2b__form {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+
+  .b2b__form-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .b2b__form-note {
+    color: var(--ink-soft);
+  }
+
+  .b2b__form-note a {
+    color: var(--pulse);
+    border-bottom: 1px solid currentColor;
+  }
+
+  .b2b__status {
+    padding: 12px 16px;
+    border-radius: var(--r-sm);
+    background: var(--pulse-dim);
+    color: var(--pulse-deep);
+  }
+
+  .b2b__status[data-error] {
+    background: color-mix(in oklab, var(--doppler) 12%, transparent);
+    color: var(--doppler);
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-b2b-form]');
+
+  if (form) {
+    const consent = form.querySelector<HTMLInputElement>('[data-b2b-consent]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-b2b-submit]')!;
+    const status = form.querySelector<HTMLElement>('[data-b2b-status]')!;
+
+    consent.addEventListener('change', () => {
+      submit.disabled = !consent.checked;
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Honeypot: заполнено ботом — молча выходим
+      if ((form.elements.namedItem('website') as HTMLInputElement)?.value) return;
+
+      if (!form.checkValidity()) {
+        status.hidden = false;
+        status.setAttribute('data-error', '');
+        status.textContent = 'Заполните компанию, имя и телефон.';
+        return;
+      }
+
+      // Демо: боевая отправка идёт на серверный эндпоинт хостинга в РФ
+      status.hidden = false;
+      status.removeAttribute('data-error');
+      status.textContent = 'Запрос отправлен. Свяжемся в течение рабочего дня.';
+      submit.disabled = true;
+      form.reset();
+    });
+  }
+</script>

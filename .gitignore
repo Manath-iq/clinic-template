@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+
+# исходники генерации изображений (крупные PNG, не нужны в сборке)
+.assets-source/

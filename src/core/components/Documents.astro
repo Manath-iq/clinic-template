@@ -1,0 +1,367 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+import SectionHead from './SectionHead.astro';
+
+const { documents, taxDeduction, clinic, contacts, legal } = content;
+const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+---
+
+<section class="section" id="documents">
+  <div class="container">
+    <SectionHead
+      index="11"
+      eyebrow="Документы"
+      title="На что вы имеете право"
+      lead="Лицензия, договор и справка для налоговой — всё это выдаётся по умолчанию, просить отдельно не нужно."
+    />
+
+    <div class="docs2">
+      {/* Налоговый вычет — акцент блока */}
+      <article class="docs2__tax card" data-reveal>
+        <p class="docs2__tax-eyebrow eyebrow">Налоговый вычет</p>
+        <h3 class="docs2__tax-title t-h3">{taxDeduction.title}</h3>
+        <p class="docs2__tax-text">{taxDeduction.text}</p>
+
+        <div class="docs2__tax-example">
+          <p class="t-xs">Пример</p>
+          <p class="docs2__tax-calc">
+            <span class="data">8 900 ₽</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+            <span class="data data-price docs2__tax-final">7 743 ₽</span>
+            <span class="docs2__tax-back data data-price">вернётся {fmt(taxDeduction.back)} ₽</span>
+          </p>
+        </div>
+      </article>
+
+      {/* Остальные документы */}
+      <ul class="docs2__list">
+        {documents.map((d, i) => (
+          <li class="docs2__item card" data-reveal style={`--reveal-delay: ${i * 60}ms`}>
+            <h3 class="docs2__name">{d.title}</h3>
+            <p class="docs2__text t-sm">{d.text}</p>
+            {d.type === 'lightbox' && (
+              <button type="button" class="docs2__action" data-license-open>
+                {d.action}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+                </svg>
+              </button>
+            )}
+            {d.type === 'phone' && (
+              <a href={`tel:${contacts.phoneRaw}`} class="docs2__action" data-goal="phone_click">
+                {d.action}
+              </a>
+            )}
+            {d.type === 'text' && <span class="docs2__action docs2__action--static">{d.action}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {/* Реквизиты лицензии текстом — требование ПП 736 */}
+    <dl class="docs2__license" data-reveal>
+      <div>
+        <dt>Номер лицензии</dt>
+        <dd class="data">{clinic.license.number}</dd>
+      </div>
+      <div>
+        <dt>Дата выдачи</dt>
+        <dd class="data">{clinic.license.date}</dd>
+      </div>
+      <div>
+        <dt>Орган выдачи</dt>
+        <dd>{clinic.license.issuedBy}</dd>
+      </div>
+      <div>
+        <dt>Срок ожидания услуги</dt>
+        <dd>{legal.waitTime}</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+{/* Лайтбокс лицензии */}
+<div class="lb" data-license hidden>
+  <div class="lb__backdrop" data-license-close></div>
+  <div class="lb__inner" role="dialog" aria-modal="true" aria-label="Медицинская лицензия">
+    <button type="button" class="lb__close" data-license-close aria-label="Закрыть">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+    <img
+      src={url(clinic.license.scanUrl)}
+      alt="Макет медицинской лицензии центра «АЯЗ» с пометкой «Образец»"
+      width="840"
+      height="1188"
+      loading="lazy"
+      data-a11y-keep
+    />
+    <a href={url("/license")} class="lb__link">Реквизиты и перечень видов работ →</a>
+  </div>
+</div>
+
+<style>
+  .docs2 {
+    display: grid;
+    gap: 12px;
+  }
+
+  @media (min-width: 960px) {
+    .docs2 {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+  }
+
+  /* ─── Вычет ─── */
+  .docs2__tax {
+    padding: 32px;
+    border-color: var(--ink);
+  }
+
+  .docs2__tax-title {
+    margin-top: 14px;
+    font-size: 1.625rem;
+  }
+
+  .docs2__tax-text {
+    margin-top: 16px;
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 46ch;
+  }
+
+  .docs2__tax-example {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .docs2__tax-example > p:first-child {
+    color: var(--ink-soft);
+    font-family: var(--font-data);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.625rem;
+  }
+
+  .docs2__tax-calc {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-top: 14px;
+    font-size: 1.375rem;
+    font-weight: 500;
+  }
+
+  .docs2__tax-calc > svg {
+    color: var(--ink-soft);
+  }
+
+  .docs2__tax-calc > span:first-child {
+    color: var(--ink-soft);
+    text-decoration: line-through;
+  }
+
+  .docs2__tax-final {
+    color: var(--doppler);
+  }
+
+  .docs2__tax-back {
+    font-size: var(--t-xs);
+    font-weight: 400;
+    padding: 5px 10px;
+    background: var(--pulse-dim);
+    color: var(--pulse-deep);
+    border-radius: var(--r-sm);
+  }
+
+  /* ─── Список документов ─── */
+  .docs2__list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .docs2__item {
+    padding: 24px 26px;
+  }
+
+  .docs2__name {
+    font-size: 1.0625rem;
+    font-weight: 500;
+  }
+
+  .docs2__text {
+    margin-top: 10px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+
+  .docs2__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: var(--t-xs);
+    font-weight: 500;
+    color: var(--pulse);
+    transition: gap var(--dur-fast) var(--ease);
+  }
+
+  button.docs2__action:hover,
+  a.docs2__action:hover {
+    gap: 13px;
+  }
+
+  .docs2__action--static {
+    color: var(--ink-soft);
+    cursor: default;
+  }
+
+  /* ─── Реквизиты ─── */
+  .docs2__license {
+    display: grid;
+    gap: 24px;
+    margin: 40px 0 0;
+    padding-top: 28px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  @media (min-width: 760px) {
+    .docs2__license {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 48px;
+    }
+  }
+
+  @media (min-width: 1080px) {
+    .docs2__license {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .docs2__license dt {
+    font-family: var(--font-data);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .docs2__license dd {
+    margin: 8px 0 0;
+    font-size: var(--t-sm);
+    line-height: 1.5;
+  }
+
+  /* ─── Лайтбокс ─── */
+  .lb {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+  }
+
+  .lb[data-open] {
+    opacity: 1;
+  }
+
+  .lb__backdrop {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in oklab, var(--ink) 72%, transparent);
+    backdrop-filter: blur(6px);
+  }
+
+  .lb__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-height: 100%;
+    transform: scale(0.98);
+    transition: transform var(--dur) var(--ease);
+  }
+
+  .lb[data-open] .lb__inner {
+    transform: none;
+  }
+
+  .lb__inner img {
+    max-height: min(82vh, 900px);
+    width: auto;
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow-float);
+  }
+
+  .lb__close {
+    position: absolute;
+    top: -46px;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    color: var(--paper);
+    border: 1px solid color-mix(in oklab, #fff 30%, transparent);
+    border-radius: 50%;
+  }
+
+  .lb__link {
+    font-size: var(--t-sm);
+    color: var(--paper);
+    border-bottom: 1px solid color-mix(in oklab, #fff 40%, transparent);
+  }
+</style>
+
+<script>
+  const lb = document.querySelector<HTMLElement>('[data-license]');
+
+  if (lb) {
+    let lastFocus: HTMLElement | null = null;
+
+    const open = () => {
+      lastFocus = document.activeElement as HTMLElement;
+      lb.hidden = false;
+      requestAnimationFrame(() => lb.setAttribute('data-open', ''));
+      document.body.style.overflow = 'hidden';
+      lb.querySelector<HTMLElement>('.lb__close')?.focus();
+    };
+
+    const close = () => {
+      lb.removeAttribute('data-open');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        lb.hidden = true;
+      }, 240);
+      lastFocus?.focus();
+    };
+
+    document
+      .querySelectorAll<HTMLElement>('[data-license-open]')
+      .forEach((btn) => btn.addEventListener('click', open));
+
+    lb.querySelectorAll<HTMLElement>('[data-license-close]').forEach((el) =>
+      el.addEventListener('click', close)
+    );
+
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !lb.hidden) close();
+    });
+  }
+</script>

@@ -1,0 +1,250 @@
+---
+import content from '../../client/content.json';
+import SectionHead from './SectionHead.astro';
+
+const { programs } = content;
+const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+---
+
+<section class="section" id="programs">
+  <div class="container">
+    <SectionHead
+      index="03"
+      eyebrow="Программы"
+      title="Собранные комплексы — дешевле, чем по отдельности"
+      lead="Один визит вместо трёх, один протокол по всем зонам. Состав раскрывается — видно, за что вы платите."
+    />
+
+    <ul class="prog__list">
+      {programs.map((p, i) => (
+        <li
+          class="prog__item"
+          data-featured={p.featured || undefined}
+          data-reveal
+          style={`--reveal-delay: ${i * 60}ms`}
+        >
+          <article class="card prog__card">
+            {p.featured && <span class="prog__badge">Чаще всего выбирают</span>}
+
+            <div class="prog__head">
+              <h3 class="prog__name t-h3">{p.name}</h3>
+              <p class="prog__for t-xs">{p.for}</p>
+            </div>
+
+            <div class="prog__prices">
+              <p class="prog__price data data-price">
+                {fmt(p.price)} <span class="prog__rub">₽</span>
+              </p>
+              <p class="prog__old">
+                <s class="data data-price">{fmt(p.priceOld)} ₽</s>
+                <span class="prog__save data data-price">−{fmt(p.priceOld - p.price)} ₽</span>
+              </p>
+            </div>
+
+            <details class="prog__details" data-goal="program_open">
+              <summary class="prog__summary">
+                <span>Что входит</span>
+                <span class="prog__count data">{p.includes.length} исследования</span>
+                <svg class="prog__chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </summary>
+              <ul class="prog__includes">
+                {p.includes.map((item) => (
+                  <li>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                      <path d="m5 13 4 4L19 7" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p class="prog__duration data">Всего около {p.duration} минут</p>
+            </details>
+
+            <button
+              type="button"
+              class={`btn ${p.featured ? 'btn-primary' : 'btn-ghost'} prog__cta`}
+              data-book-open
+              data-program={p.id}
+            >
+              Записаться на программу
+            </button>
+          </article>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .prog__list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 720px) {
+    .prog__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1080px) {
+    .prog__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    /* Полная ревизия — широкая карточка в нижнем ряду */
+    .prog__item:last-child {
+      grid-column: span 2;
+    }
+  }
+
+  .prog__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    height: 100%;
+    padding: 28px;
+  }
+
+  .prog__item[data-featured] .prog__card {
+    border-color: var(--ink);
+  }
+
+  .prog__badge {
+    position: absolute;
+    top: -1px;
+    right: 20px;
+    padding: 6px 12px;
+    background: var(--doppler-text);
+    color: #fff;
+    font-family: var(--font-data);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+  }
+
+  .prog__name {
+    font-size: 1.5rem;
+  }
+
+  .prog__for {
+    margin-top: 10px;
+    color: var(--ink-soft);
+  }
+
+  .prog__prices {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+  }
+
+  .prog__price {
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--doppler);
+    line-height: 1;
+  }
+
+  .prog__rub {
+    font-size: 1.125rem;
+  }
+
+  .prog__old {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: var(--t-xs);
+  }
+
+  .prog__old s {
+    color: var(--ink-soft);
+  }
+
+  .prog__save {
+    padding: 3px 8px;
+    background: var(--pulse-dim);
+    color: var(--pulse-deep);
+    border-radius: var(--r-sm);
+    font-weight: 500;
+  }
+
+  /* ─── Раскрывающийся состав ─── */
+  .prog__details {
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    padding-block: 4px;
+    margin-top: auto;
+  }
+
+  .prog__summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .prog__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .prog__count {
+    margin-left: auto;
+    font-size: var(--t-xs);
+    font-weight: 400;
+    color: var(--ink-soft);
+  }
+
+  .prog__chev {
+    flex: none;
+    color: var(--ink-soft);
+    transition: transform var(--dur-fast) var(--ease);
+  }
+
+  .prog__details[open] .prog__chev {
+    transform: rotate(180deg);
+  }
+
+  .prog__includes {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 14px;
+    padding: 0;
+    list-style: none;
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
+  }
+
+  .prog__includes li {
+    display: grid;
+    grid-template-columns: 15px 1fr;
+    gap: 10px;
+    align-items: start;
+    line-height: 1.45;
+  }
+
+  .prog__includes svg {
+    margin-top: 5px;
+    color: var(--pulse);
+  }
+
+  .prog__duration {
+    margin-bottom: 16px;
+    font-size: var(--t-xs);
+    color: var(--ink-soft);
+  }
+
+  .prog__cta {
+    width: 100%;
+  }
+</style>

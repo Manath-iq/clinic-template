@@ -1,0 +1,77 @@
+---
+import Base from '../core/layouts/Base.astro';
+import Header from '../core/components/Header.astro';
+import Hero from '../core/components/Hero.astro';
+import ServicePicker from '../core/components/ServicePicker.astro';
+import Programs from '../core/components/Programs.astro';
+import Promo from '../core/components/Promo.astro';
+import Equipment from '../core/components/Equipment.astro';
+import Doctors from '../core/components/Doctors.astro';
+import Visit from '../core/components/Visit.astro';
+import Prep from '../core/components/Prep.astro';
+import PriceTable from '../core/components/PriceTable.astro';
+import Reviews from '../core/components/Reviews.astro';
+import Documents from '../core/components/Documents.astro';
+import Corporate from '../core/components/Corporate.astro';
+import Faq from '../core/components/Faq.astro';
+import BookingSection from '../core/components/BookingSection.astro';
+import Footer from '../core/components/Footer.astro';
+import BookingModal from '../core/components/BookingModal.astro';
+import StickyBar from '../core/components/StickyBar.astro';
+import CookieBanner from '../core/components/CookieBanner.astro';
+import content from '../client/content.json';
+
+const { clinic, faq, doctors } = content;
+
+const title = `УЗИ в ${clinic.cityIn} — цены, запись на сегодня | ${clinic.nameFull}`;
+const description =
+  'Ультразвуковая диагностика в Нижнекамске: аппарат Mindray DC-70, врачи со стажем от 12 лет. Протокол и снимки на руки сразу после исследования. Цены от 800 ₽.';
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+  ...doctors.map((d) => ({
+    '@context': 'https://schema.org',
+    '@type': 'Physician',
+    name: d.nameFull,
+    jobTitle: d.position,
+    medicalSpecialty: 'Diagnostic',
+    alumniOf: d.education,
+    worksFor: { '@type': 'MedicalClinic', name: clinic.nameFull },
+  })),
+];
+---
+
+<Base title={title} description={description} schema={schema}>
+  <Header />
+
+  <main id="main">
+    <Hero />
+    <ServicePicker />
+    <Programs />
+    <Promo />
+    <Equipment />
+    <Doctors />
+    <Visit />
+    <Prep />
+    <PriceTable />
+    <Reviews />
+    <Documents />
+    <Corporate />
+    <Faq />
+    <BookingSection />
+  </main>
+
+  <Footer />
+
+  <BookingModal />
+  <StickyBar />
+  <CookieBanner />
+</Base>

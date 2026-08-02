@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /privacy
+
+Sitemap: https://ayaz-uzi.ru/sitemap-index.xml

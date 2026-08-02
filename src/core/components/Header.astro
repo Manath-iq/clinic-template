@@ -1,0 +1,460 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+
+const { clinic, contacts, nav } = content;
+---
+
+{/* ─── 00 · Топбар: журнальная линейка из референса ─────────────── */}
+<div class="topbar">
+  <div class="container topbar__inner">
+    <span class="topbar__cell">{clinic.city} · {contacts.addressShort}</span>
+    <span class="topbar__cell topbar__cell--mid">{contacts.hours}</span>
+    <div class="topbar__cell topbar__cell--end">
+      <button type="button" class="topbar__a11y" data-a11y-toggle aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span>Версия для слабовидящих</span>
+      </button>
+      <a href={`tel:${contacts.phoneRaw}`} class="topbar__phone data" data-goal="phone_click">
+        {contacts.phone}
+      </a>
+    </div>
+  </div>
+</div>
+
+{/* ─── Шапка ────────────────────────────────────────────────────── */}
+<header class="hdr" data-header>
+  <div class="container hdr__inner">
+    <a href={url("/")} class="brand" aria-label={`${clinic.nameFull}, на главную`}>
+      <svg class="brand__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 4 L28 26 A14 14 0 0 1 4 26 Z" stroke="currentColor" stroke-width="1.2" opacity=".35" />
+        <path d="M16 4 L23 26 A8 8 0 0 1 9 26 Z" stroke="currentColor" stroke-width="1.2" opacity=".7" />
+        <path d="M5 21 q3.6 -6.5 7.3 0 t7.3 0 t7.3 0" stroke="var(--pulse)" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+      <span class="brand__text">
+        <span class="brand__name">{clinic.name}</span>
+        <span class="brand__sub">{clinic.tagline}</span>
+      </span>
+    </a>
+
+    <nav class="hdr__nav" aria-label="Основная навигация">
+      {nav.map((item) => <a href={item.href} class="hdr__link">{item.label}</a>)}
+    </nav>
+
+    <div class="hdr__actions">
+      <a href={`tel:${contacts.phoneRaw}`} class="hdr__phone data" data-goal="phone_click">
+        {contacts.phone}
+      </a>
+      <button type="button" class="btn btn-primary btn-sm" data-book-open>Записаться</button>
+
+      {/* На мобиле телефон всегда виден (п. 10) */}
+      <a
+        href={`tel:${contacts.phoneRaw}`}
+        class="hdr__call"
+        data-goal="phone_click"
+        aria-label={`Позвонить: ${contacts.phone}`}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1.1 1A16 16 0 0 1 4 5.1 1 1 0 0 1 5 4Z" />
+        </svg>
+      </a>
+
+      <button
+        type="button"
+        class="hdr__burger"
+        data-menu-open
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Открыть меню"
+      >
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+{/* ─── Мобильное меню ───────────────────────────────────────────── */}
+<div class="mmenu" id="mobile-menu" data-menu hidden>
+  <div class="mmenu__panel">
+    <div class="mmenu__top">
+      <span class="eyebrow">Меню</span>
+      <button type="button" class="mmenu__close" data-menu-close aria-label="Закрыть меню">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav class="mmenu__nav" aria-label="Мобильная навигация">
+      {nav.map((item, i) => (
+        <a href={item.href} class="mmenu__link" data-menu-close>
+          <span class="mmenu__num data">{String(i + 1).padStart(2, '0')}</span>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+    <div class="mmenu__foot">
+      <a href={`tel:${contacts.phoneRaw}`} class="mmenu__phone data">{contacts.phone}</a>
+      <p class="t-xs" style="color: var(--ink-soft)">{contacts.hours}</p>
+      <button type="button" class="btn btn-primary" style="width: 100%" data-book-open>
+        Записаться на исследование
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* ─── Топбар ─── */
+  .topbar {
+    border-bottom: 1px solid var(--hairline);
+    background: var(--paper);
+  }
+
+  .topbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 40px;
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .topbar__cell--mid {
+    display: none;
+  }
+
+  .topbar__cell--end {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .topbar__a11y {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .topbar__a11y:hover,
+  .topbar__a11y[aria-pressed='true'] {
+    color: var(--pulse);
+  }
+
+  .topbar__phone {
+    display: none;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    text-transform: none;
+    font-size: 0.75rem;
+  }
+
+  @media (min-width: 900px) {
+    .topbar__cell--mid,
+    .topbar__a11y {
+      display: flex;
+    }
+    .topbar__cell--mid {
+      display: block;
+    }
+  }
+
+  /* ─── Шапка ─── */
+  .hdr {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: color-mix(in oklab, var(--paper) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur) var(--ease),
+      background var(--dur) var(--ease);
+  }
+
+  .hdr[data-stuck] {
+    border-bottom-color: var(--hairline);
+    background: color-mix(in oklab, var(--paper) 94%, transparent);
+  }
+
+  .hdr__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 72px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+  }
+
+  .brand__mark {
+    width: 30px;
+    height: 30px;
+    flex: none;
+  }
+
+  .brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+
+  .brand__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: 0.06em;
+  }
+
+  .brand__sub {
+    font-family: var(--font-data);
+    font-size: 0.5625rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .hdr__nav {
+    display: none;
+    gap: 26px;
+  }
+
+  .hdr__link {
+    position: relative;
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
+    padding-block: 4px;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .hdr__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--pulse);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+
+  .hdr__link:hover {
+    color: var(--ink);
+  }
+
+  .hdr__link:hover::after {
+    transform: scaleX(1);
+  }
+
+  .hdr__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .hdr__phone {
+    display: none;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .hdr__actions .btn {
+    display: none;
+  }
+
+  .hdr__call {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    color: var(--ink);
+    transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+
+  .hdr__call:hover {
+    border-color: var(--pulse);
+    color: var(--pulse);
+  }
+
+  .hdr__burger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+  }
+
+  .hdr__burger span {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: var(--ink);
+  }
+
+  @media (min-width: 1080px) {
+    .hdr__nav {
+      display: flex;
+    }
+    .hdr__phone,
+    .hdr__actions .btn {
+      display: inline-flex;
+    }
+    .hdr__burger,
+    .hdr__call {
+      display: none;
+    }
+  }
+
+  /* ─── Мобильное меню ─── */
+  .mmenu {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: color-mix(in oklab, var(--ink) 40%, transparent);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+  }
+
+  .mmenu[data-open] {
+    opacity: 1;
+  }
+
+  .mmenu__panel {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+    padding: 20px var(--gutter) 32px;
+    transform: translateX(100%);
+    transition: transform var(--dur) var(--ease);
+    overflow-y: auto;
+  }
+
+  .mmenu[data-open] .mmenu__panel {
+    transform: none;
+  }
+
+  .mmenu__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .mmenu__close {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -10px;
+  }
+
+  .mmenu__nav {
+    display: flex;
+    flex-direction: column;
+    padding-block: 8px;
+  }
+
+  .mmenu__link {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 18px 0;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .mmenu__num {
+    font-size: 0.6875rem;
+    color: var(--ink-soft);
+  }
+
+  .mmenu__foot {
+    margin-top: auto;
+    padding-top: 28px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .mmenu__phone {
+    font-size: 1.375rem;
+    font-weight: 500;
+  }
+</style>
+
+<script>
+  // Тень/линия у шапки после прокрутки
+  const hdr = document.querySelector<HTMLElement>('[data-header]');
+  if (hdr) {
+    const onScroll = () => {
+      if (scrollY > 8) hdr.setAttribute('data-stuck', '');
+      else hdr.removeAttribute('data-stuck');
+    };
+    onScroll();
+    addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // Мобильное меню
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const burger = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+
+  if (menu && burger) {
+    let lastFocus: HTMLElement | null = null;
+
+    const open = () => {
+      lastFocus = document.activeElement as HTMLElement;
+      menu.hidden = false;
+      requestAnimationFrame(() => menu.setAttribute('data-open', ''));
+      burger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      menu.querySelector<HTMLElement>('[data-menu-close]')?.focus();
+    };
+
+    const close = () => {
+      menu.removeAttribute('data-open');
+      burger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        menu.hidden = true;
+      }, 240);
+      lastFocus?.focus();
+    };
+
+    burger.addEventListener('click', open);
+    menu.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t === menu || t.closest('[data-menu-close]')) close();
+    });
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) close();
+    });
+  }
+</script>

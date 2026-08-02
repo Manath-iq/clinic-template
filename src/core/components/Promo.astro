@@ -1,0 +1,117 @@
+---
+import content from '../../client/content.json';
+
+const { promo } = content;
+---
+
+{
+  promo.enabled && (
+    <section class="section-tight">
+      <div class="container">
+        <div class="promo" data-reveal>
+          <div class="promo__body">
+            <p class="promo__eyebrow eyebrow">{promo.eyebrow}</p>
+            <h2 class="promo__title t-h2">{promo.title}</h2>
+            <p class="promo__text t-lead">{promo.text}</p>
+            <div class="promo__actions">
+              <button type="button" class="btn btn-primary" data-book-open data-promo="family">
+                {promo.cta}
+              </button>
+              <p class="promo__note t-xs">{promo.note}</p>
+            </div>
+          </div>
+
+          {/* Крупная цифра как графический объект — язык журнальной обложки */}
+          <div class="promo__figure decor" aria-hidden="true">
+            <span class="promo__percent data">−25</span>
+            <span class="promo__percent-sign data">%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .promo {
+    position: relative;
+    display: grid;
+    gap: 32px;
+    padding: clamp(32px, 4vw, 56px);
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+
+  @media (min-width: 900px) {
+    .promo {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 56px;
+    }
+  }
+
+  .promo__body {
+    position: relative;
+    z-index: 1;
+    max-width: 58ch;
+  }
+
+  .promo__eyebrow {
+    color: color-mix(in oklab, var(--paper) 58%, transparent);
+  }
+
+  .promo__title {
+    margin-top: 14px;
+  }
+
+  .promo__text {
+    margin-top: 18px;
+    color: color-mix(in oklab, var(--paper) 72%, transparent);
+  }
+
+  .promo__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+    margin-top: 28px;
+  }
+
+  .promo__note {
+    max-width: 34ch;
+    color: color-mix(in oklab, var(--paper) 48%, transparent);
+    line-height: 1.4;
+  }
+
+  /* ─── Цифра ─── */
+  .promo__figure {
+    position: relative;
+    z-index: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    line-height: 0.8;
+    color: color-mix(in oklab, var(--doppler) 70%, transparent);
+  }
+
+  @media (min-width: 900px) {
+    .promo__figure {
+      justify-content: flex-end;
+    }
+  }
+
+  .promo__percent {
+    font-size: clamp(4.5rem, 3rem + 8vw, 11rem);
+    font-weight: 500;
+    letter-spacing: -0.06em;
+  }
+
+  .promo__percent-sign {
+    font-size: clamp(1.75rem, 1rem + 3vw, 4rem);
+    font-weight: 400;
+    padding-top: 0.2em;
+    color: color-mix(in oklab, var(--paper) 40%, transparent);
+  }
+</style>

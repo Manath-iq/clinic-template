@@ -1,0 +1,137 @@
+---
+import content from '../../client/content.json';
+import SectionHead from './SectionHead.astro';
+
+const { prep } = content;
+---
+
+<section class="section" id="prep">
+  <div class="container">
+    <SectionHead
+      index="08"
+      eyebrow="Подготовка"
+      title="Что сделать до исследования"
+      lead="Половина исследований не требует никакой подготовки. Для остальных — короткие памятки ниже. При записи администратор проговорит подготовку по вашей услуге."
+    />
+
+    <div class="prep__list">
+      {prep.map((p, i) => (
+        <details class="prep__item" data-reveal style={`--reveal-delay: ${i * 50}ms`}>
+          <summary class="prep__summary">
+            <span class="prep__index data">{String(i + 1).padStart(2, '0')}</span>
+            <span class="prep__title">
+              {p.title}
+              {p.note && <span class="prep__note">{p.note}</span>}
+            </span>
+            <svg class="prep__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </summary>
+          <div class="prep__body">
+            <ul>
+              {p.items.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .prep__list {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .prep__item {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .prep__summary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 16px;
+    padding: 26px 4px;
+    cursor: pointer;
+    list-style: none;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .prep__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .prep__summary:hover {
+    color: var(--pulse);
+  }
+
+  .prep__index {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    padding-top: 7px;
+  }
+
+  .prep__title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .prep__note {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-body);
+    font-size: var(--t-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  .prep__icon {
+    flex: none;
+    margin-top: 5px;
+    color: var(--ink-soft);
+    transition: transform var(--dur) var(--ease);
+  }
+
+  .prep__item[open] .prep__icon {
+    transform: rotate(45deg);
+    color: var(--pulse);
+  }
+
+  .prep__body {
+    padding: 0 4px 30px 44px;
+  }
+
+  .prep__body ul {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 72ch;
+  }
+
+  .prep__body li {
+    position: relative;
+    padding-left: 22px;
+    font-size: var(--t-sm);
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .prep__body li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 8px;
+    height: 1px;
+    background: var(--pulse);
+  }
+</style>

@@ -1,0 +1,349 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+import ScanSector from './ScanSector.astro';
+
+const { hero, clinic } = content;
+---
+
+<section class="hero">
+  <div class="hero__art decor" aria-hidden="true">
+    <div class="hero__scan">
+      <ScanSector />
+    </div>
+    <img
+      class="hero__object"
+      src={url("/img/hero-probe.webp")}
+      alt=""
+      width="601"
+      height="906"
+      fetchpriority="high"
+      decoding="async"
+    />
+  </div>
+
+  <div class="container hero__inner">
+    <p class="hero__eyebrow eyebrow">
+      {clinic.tagline} · {clinic.city}
+    </p>
+
+    <h1 class="hero__h1 t-display">
+      {hero.h1.map((line, i) => (
+        <span class="hero__line" style={`--line-delay: ${180 + i * 90}ms`}>
+          <span>{line}</span>
+        </span>
+      ))}
+    </h1>
+
+    <div class="hero__grid">
+      <p class="hero__lead t-lead">{hero.lead}</p>
+
+      <div class="hero__cta">
+        <button type="button" class="btn btn-primary" data-book-open>
+          Записаться на исследование
+        </button>
+        <a href="#price" class="btn btn-ghost">Смотреть цены</a>
+      </div>
+    </div>
+
+    {/* Ближайшие свободные слоты — кликабельны, прокидываются в форму */}
+    <div class="hero__slots">
+      <span class="hero__slots-label eyebrow">Ближайшая запись</span>
+      <div class="scroll-x hero__slots-list">
+        {hero.slots.map((slot) => (
+          <button
+            type="button"
+            class="chip chip--slot"
+            data-slot={`${slot.label}, ${slot.time}`}
+            data-goal="slot_click"
+          >
+            <span class="chip__dot" aria-hidden="true"></span>
+            {slot.label}
+            <span class="data chip__time">{slot.time}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* Строка доверия: 4 проверяемых факта */}
+    <dl class="hero__trust">
+      {hero.trust.map((item) => (
+        <div class="hero__trust-cell">
+          <dt class="hero__trust-label">{item.label}</dt>
+          <dd class="hero__trust-value data">
+            {item.counter ? <span data-counter={item.counter}>0</span> : item.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(48px, 6vw, 88px) clamp(56px, 6vw, 96px);
+  }
+
+  /* Графика живёт за типографикой, справа — как объект из референсов */
+  .hero__art {
+    position: absolute;
+    top: -6%;
+    right: -14%;
+    width: min(78vw, 860px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (min-width: 900px) {
+    .hero__art {
+      top: 2%;
+      right: -7%;
+      width: min(44vw, 680px);
+    }
+  }
+
+  .hero__scan {
+    width: 100%;
+  }
+
+  /* 3D-датчик поверх развёртки — он и есть источник конуса */
+  .hero__object {
+    position: absolute;
+    top: 4%;
+    left: 50%;
+    width: 46%;
+    height: auto;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: hero-object 1200ms var(--ease) 300ms forwards;
+  }
+
+  @keyframes hero-object {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-18px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__eyebrow {
+    opacity: 0;
+    animation: hero-up 600ms var(--ease) 80ms forwards;
+  }
+
+  .hero__h1 {
+    position: relative;
+    z-index: 2; /* заголовок читается поверх стеклянного объекта */
+    margin-top: 22px;
+  }
+
+  /* На десктопе разбивка строк задана в контенте — не даём ей ломаться */
+  @media (min-width: 900px) {
+    .hero__line > span {
+      white-space: nowrap;
+    }
+  }
+
+  /* Строки H1 выезжают из-под маски — журнальный вход */
+  .hero__line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.06em;
+    margin-bottom: -0.02em;
+  }
+
+  .hero__line > span {
+    display: block;
+    transform: translateY(110%);
+    animation: hero-line 900ms var(--ease) var(--line-delay) forwards;
+  }
+
+  /* Второй строке — акцентный цвет, как в референсе Prestige */
+  .hero__line:nth-child(2) > span {
+    color: var(--pulse);
+  }
+
+  @keyframes hero-line {
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes hero-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hero__grid {
+    display: grid;
+    gap: 32px;
+    margin-top: 44px;
+    opacity: 0;
+    animation: hero-up 700ms var(--ease) 620ms forwards;
+  }
+
+  @media (min-width: 900px) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 56px;
+      margin-top: 56px;
+    }
+  }
+
+  .hero__lead {
+    max-width: 46ch;
+  }
+
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hero__cta .btn {
+    flex: 1 1 auto;
+  }
+
+  @media (min-width: 560px) {
+    .hero__cta .btn {
+      flex: 0 0 auto;
+    }
+  }
+
+  /* ─── Слоты ─── */
+  .hero__slots {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 40px;
+    opacity: 0;
+    animation: hero-up 700ms var(--ease) 760ms forwards;
+  }
+
+  @media (min-width: 700px) {
+    .hero__slots {
+      flex-direction: row;
+      align-items: center;
+      gap: 20px;
+    }
+  }
+
+  .hero__slots-label {
+    flex: none;
+  }
+
+  .hero__slots-list {
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+  }
+
+  @media (min-width: 700px) {
+    .hero__slots-list {
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+
+  .chip--slot {
+    background: var(--surface);
+  }
+
+  .chip__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pulse);
+    flex: none;
+  }
+
+  .chip__time {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .chip--slot:hover .chip__time {
+    color: inherit;
+  }
+
+  /* ─── Строка доверия ─── */
+  .hero__trust {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 56px 0 0;
+    background: var(--hairline);
+    border-block: 1px solid var(--hairline);
+    opacity: 0;
+    animation: hero-up 700ms var(--ease) 900ms forwards;
+  }
+
+  @media (min-width: 860px) {
+    .hero__trust {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .hero__trust-cell {
+    background: var(--paper);
+    padding: 20px 20px 20px 0;
+  }
+
+  @media (min-width: 860px) {
+    .hero__trust-cell {
+      padding: 24px 28px 24px 0;
+    }
+    .hero__trust-cell + .hero__trust-cell {
+      padding-left: 28px;
+    }
+  }
+
+  .hero__trust-label {
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .hero__trust-value {
+    margin: 8px 0 0;
+    font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__eyebrow,
+    .hero__grid,
+    .hero__slots,
+    .hero__trust {
+      opacity: 1;
+      animation: none;
+    }
+    .hero__line > span {
+      transform: none;
+      animation: none;
+    }
+    .hero__object {
+      opacity: 1;
+      animation: none;
+    }
+  }
+</style>

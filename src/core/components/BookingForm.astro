@@ -1,0 +1,190 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const { services, programs, form, contacts } = content;
+const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+---
+
+<form class="bform" data-booking-form novalidate id={`form-${id}`}>
+  <div class="bform__row">
+    <label class="field" for={`${id}-name`}>
+      <span class="field__label">Имя</span>
+      <input
+        type="text"
+        id={`${id}-name`}
+        name="name"
+        class="field__input"
+        required
+        autocomplete="given-name"
+        aria-describedby={`${id}-name-err`}
+      />
+      <span class="field__error" id={`${id}-name-err`} hidden>Укажите, как к вам обращаться</span>
+    </label>
+
+    <label class="field" for={`${id}-phone`}>
+      <span class="field__label">Телефон</span>
+      <input
+        type="tel"
+        id={`${id}-phone`}
+        name="phone"
+        class="field__input"
+        inputmode="tel"
+        placeholder="+7 (___) ___-__-__"
+        required
+        autocomplete="tel"
+        data-phone-mask
+        aria-describedby={`${id}-phone-err`}
+      />
+      <span class="field__error" id={`${id}-phone-err`} hidden>Введите номер полностью</span>
+    </label>
+  </div>
+
+  <div class="bform__row">
+    <label class="field" for={`${id}-service`}>
+      <span class="field__label">Услуга</span>
+      <select id={`${id}-service`} name="service" class="field__select" data-booking-service>
+        <option value="">Пока не выбрал(а)</option>
+        <optgroup label="Программы">
+          {programs.map((p) => (
+            <option value={`program:${p.id}`}>{p.name} — {fmt(p.price)} ₽</option>
+          ))}
+        </optgroup>
+        <optgroup label="Отдельные исследования">
+          {services.map((s) => (
+            <option value={`service:${s.id}`}>{s.name} — {fmt(s.price)} ₽</option>
+          ))}
+        </optgroup>
+      </select>
+    </label>
+
+    <label class="field" for={`${id}-time`}>
+      <span class="field__label">Удобное время</span>
+      <input
+        type="text"
+        id={`${id}-time`}
+        name="time"
+        class="field__input"
+        placeholder="Например, завтра до обеда"
+        autocomplete="off"
+        data-booking-time
+      />
+    </label>
+  </div>
+
+  <label class="field field--check">
+    <input type="checkbox" name="consent" required data-booking-consent />
+    <span class="t-xs">
+      {form.consent} <a href={url("/privacy")} target="_blank">{form.consentLink}</a>
+    </span>
+  </label>
+
+  {/* Honeypot: реальные люди это поле не видят */}
+  <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+  <button type="submit" class="btn btn-primary bform__submit" disabled data-booking-submit>
+    {form.submit}
+  </button>
+
+  <p class="bform__note t-xs">
+    Персональные данные обрабатываются в соответствии с 152-ФЗ и хранятся на серверах в РФ.
+    Медицинские сведения через форму не собираем.
+  </p>
+
+  {/* Состояние успеха / ошибки */}
+  <div class="bform__status" data-booking-status hidden role="status" aria-live="polite">
+    <p class="bform__status-title" data-booking-status-title></p>
+    <p class="bform__status-text t-sm" data-booking-status-text></p>
+    <a href={`tel:${contacts.phoneRaw}`} class="bform__status-phone data" data-goal="phone_click">
+      {contacts.phone}
+    </a>
+  </div>
+</form>
+
+<style>
+  .bform {
+    display: grid;
+    gap: 16px;
+    position: relative;
+  }
+
+  .bform__row {
+    display: grid;
+    gap: 16px;
+  }
+
+  @media (min-width: 560px) {
+    .bform__row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .bform__submit {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  @media (min-width: 560px) {
+    .bform__submit {
+      width: auto;
+      justify-self: start;
+      min-width: 240px;
+    }
+  }
+
+  .bform__note {
+    color: var(--ink-soft);
+    line-height: 1.45;
+    max-width: 54ch;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  /* ─── Состояние после отправки ─── */
+  .bform__status {
+    display: grid;
+    gap: 8px;
+    padding: 24px;
+    border-radius: var(--r-md);
+    background: var(--pulse-dim);
+    border: 1px solid color-mix(in oklab, var(--pulse) 30%, transparent);
+  }
+
+  .bform__status[data-error] {
+    background: color-mix(in oklab, var(--doppler) 10%, transparent);
+    border-color: color-mix(in oklab, var(--doppler) 32%, transparent);
+  }
+
+  .bform__status-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--pulse-deep);
+  }
+
+  .bform__status[data-error] .bform__status-title {
+    color: var(--doppler);
+  }
+
+  .bform__status-text {
+    color: var(--ink-soft);
+  }
+
+  .bform__status-phone {
+    margin-top: 4px;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+</style>

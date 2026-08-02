@@ -1,0 +1,214 @@
+---
+import Page from '../core/layouts/Page.astro';
+import content from '../client/content.json';
+
+const { services, programs, groups, clinic, legal } = content;
+const tabs = groups.filter((g) => g.id !== 'all');
+const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
+---
+
+<Page
+  title={`Прайс на УЗИ в ${clinic.cityIn} — полный список цен | ${clinic.nameFull}`}
+  description="Полный прайс-лист центра ультразвуковой диагностики «АЯЗ»: цены на все исследования и программы в рублях, длительность, требуется ли подготовка."
+  h1="Полный прайс"
+  lead="Стоимость указана в рублях за исследование вместе с заключением и снимками. Доплат за протокол, распечатку и разбор результата нет."
+>
+  {/* Программы */}
+  <section class="pblock">
+    <h2 class="t-h3 pblock__title">Программы</h2>
+    <table class="ptable">
+      <caption class="sr-only">Комплексные программы обследования и их стоимость</caption>
+      <thead>
+        <tr>
+          <th scope="col">Программа</th>
+          <th scope="col" class="ptable__num">Время</th>
+          <th scope="col" class="ptable__num">По отдельности</th>
+          <th scope="col" class="ptable__num">Цена</th>
+        </tr>
+      </thead>
+      <tbody>
+        {programs.map((p) => (
+          <tr>
+            <th scope="row">
+              <span class="ptable__name">{p.name}</span>
+              <span class="ptable__note t-xs">{p.includes.join(' · ')}</span>
+            </th>
+            <td class="ptable__num data">{p.duration} мин</td>
+            <td class="ptable__num data data-price ptable__old">{fmt(p.priceOld)} ₽</td>
+            <td class="ptable__num data data-price ptable__price">{fmt(p.price)} ₽</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  {/* Исследования по разделам */}
+  {tabs.map((g) => (
+    <section class="pblock">
+      <h2 class="t-h3 pblock__title">{g.name}</h2>
+      <table class="ptable">
+        <caption class="sr-only">{`Цены на исследования: ${g.name}`}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Исследование</th>
+            <th scope="col" class="ptable__num">Время</th>
+            <th scope="col" class="ptable__num">Подготовка</th>
+            <th scope="col" class="ptable__num">Цена</th>
+          </tr>
+        </thead>
+        <tbody>
+          {services
+            .filter((s) => s.group === g.id)
+            .map((s) => (
+              <tr>
+                <th scope="row">
+                  <span class="ptable__name">{s.name}</span>
+                  {s.note && <span class="ptable__note t-xs">{s.note}</span>}
+                </th>
+                <td class="ptable__num data">{s.duration} мин</td>
+                <td class="ptable__num t-xs">{s.needsPrep ? 'Нужна' : '—'}</td>
+                <td class="ptable__num data data-price ptable__price">{fmt(s.price)} ₽</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+    </section>
+  ))}
+
+  <div class="pfoot">
+    <p class="t-sm">{legal.waitTime}</p>
+    <p class="t-sm">{legal.offer}</p>
+    <button type="button" class="btn btn-primary" data-book-open>Записаться на исследование</button>
+  </div>
+</Page>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .pblock + .pblock {
+    margin-top: 56px;
+  }
+
+  .pblock__title {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  /* Скругления у таблицы прайса — 0 (п. 8.4) */
+  .ptable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--t-sm);
+  }
+
+  .ptable thead th {
+    padding: 14px 12px 14px 0;
+    font-family: var(--font-data);
+    font-size: 0.625rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-align: left;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .ptable tbody th {
+    padding: 16px 16px 16px 0;
+    font-weight: 400;
+    text-align: left;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .ptable td {
+    padding: 16px 12px 16px 0;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: top;
+  }
+
+  .ptable__num {
+    text-align: right !important;
+    white-space: nowrap;
+    padding-right: 0 !important;
+  }
+
+  .ptable thead .ptable__num {
+    text-align: right;
+  }
+
+  .ptable__name {
+    display: block;
+    line-height: 1.35;
+  }
+
+  .ptable__note {
+    display: block;
+    margin-top: 5px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  .ptable__old {
+    color: var(--ink-soft);
+    text-decoration: line-through;
+  }
+
+  .ptable__price {
+    font-weight: 500;
+    font-size: var(--t-body);
+  }
+
+  /* На мобиле — компактнее, служебные колонки скрыты */
+  @media (max-width: 700px) {
+    .ptable thead {
+      display: none;
+    }
+
+    .ptable tr {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: baseline;
+      gap: 4px 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .ptable tbody th,
+    .ptable td {
+      padding: 0;
+      border: 0;
+    }
+
+    .ptable td:not(.ptable__price) {
+      grid-column: 1;
+      color: var(--ink-soft);
+      font-size: var(--t-xs);
+    }
+
+    .ptable__old {
+      display: none;
+    }
+  }
+
+  .pfoot {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-soft);
+    max-width: 78ch;
+  }
+
+  .pfoot .btn {
+    margin-top: 8px;
+  }
+</style>

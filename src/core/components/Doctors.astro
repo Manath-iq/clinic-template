@@ -1,0 +1,206 @@
+---
+import { url } from '../lib/url';
+import content from '../../client/content.json';
+import SectionHead from './SectionHead.astro';
+
+const { doctors } = content;
+---
+
+<section class="section" id="doctors">
+  <div class="container">
+    <SectionHead
+      index="06"
+      eyebrow="Врачи"
+      title="Кто проводит исследование"
+      lead="Образование, категория и стаж каждого врача — как требует постановление о платных медуслугах. Врача можно выбрать при записи."
+    />
+
+    <ul class="docs">
+      {doctors.map((d, i) => (
+        <li class="docs__item" data-reveal style={`--reveal-delay: ${i * 60}ms`}>
+          <article class="docs__card">
+            <div class="docs__photo">
+              <img
+                src={url(d.photo)}
+                alt={`${d.nameFull} — ${d.position.toLowerCase()}, центр «АЯЗ», Нижнекамск`}
+                width="400"
+                height="500"
+                loading="lazy"
+              />
+              <span class="docs__exp data">
+                {d.experience} <span>лет стажа</span>
+              </span>
+            </div>
+
+            <div class="docs__body">
+              <h3 class="docs__name">{d.nameFull}</h3>
+              <p class="docs__position">{d.position}</p>
+
+              <dl class="docs__facts">
+                <div>
+                  <dt>Категория</dt>
+                  <dd>{d.category}</dd>
+                </div>
+                <div>
+                  <dt>Образование</dt>
+                  <dd>{d.education}</dd>
+                </div>
+                <div>
+                  <dt>Специализация</dt>
+                  <dd>{d.focus}</dd>
+                </div>
+              </dl>
+
+              <p class="docs__extra t-xs">{d.extra}</p>
+
+              <button type="button" class="docs__book" data-book-open data-doctor={d.id}>
+                Записаться к врачу
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          </article>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .docs {
+    display: grid;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--hairline);
+    border-block: 1px solid var(--hairline);
+  }
+
+  @media (min-width: 760px) {
+    .docs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1160px) {
+    .docs {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .docs__card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--paper);
+    padding: 24px 24px 28px;
+    transition: background var(--dur-fast) var(--ease);
+  }
+
+  .docs__card:hover {
+    background: var(--surface);
+  }
+
+  .docs__photo {
+    position: relative;
+    margin-bottom: 22px;
+  }
+
+  .docs__photo img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--r-sm);
+    filter: grayscale(0.15);
+  }
+
+  .docs__exp {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 1.125rem;
+    font-weight: 500;
+    border-radius: 0 var(--r-sm) 0 var(--r-sm);
+  }
+
+  .docs__exp span {
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.72;
+  }
+
+  /* Тянем тело карточки, чтобы «Записаться к врачу» встало по низу у всех */
+  .docs__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .docs__name {
+    font-size: 1.1875rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+
+  .docs__position {
+    margin-top: 8px;
+    font-size: var(--t-sm);
+    color: var(--pulse);
+  }
+
+  .docs__facts {
+    display: grid;
+    gap: 12px;
+    margin: 20px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .docs__facts dt {
+    font-family: var(--font-data);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .docs__facts dd {
+    margin: 4px 0 0;
+    font-size: var(--t-sm);
+    line-height: 1.4;
+  }
+
+  .docs__extra {
+    margin-top: 18px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  .docs__book {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 22px;
+    font-size: var(--t-xs);
+    font-weight: 500;
+    color: var(--pulse);
+    transition: gap var(--dur-fast) var(--ease);
+  }
+
+  .docs__book:hover {
+    gap: 13px;
+  }
+</style>

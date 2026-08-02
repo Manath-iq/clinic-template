@@ -1,0 +1,276 @@
+---
+import content from '../../client/content.json';
+import BookingForm from './BookingForm.astro';
+
+const { form, contacts } = content;
+---
+
+<div class="bmodal" data-booking-modal hidden>
+  <div class="bmodal__backdrop" data-booking-close></div>
+
+  <div
+    class="bmodal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="bmodal-title"
+    data-booking-panel
+  >
+    <button type="button" class="bmodal__close" data-booking-close aria-label="Закрыть окно записи">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <p class="eyebrow">{contacts.address}</p>
+    <h2 class="bmodal__title t-h3" id="bmodal-title">{form.title}</h2>
+    <p class="bmodal__lead t-sm">{form.lead}</p>
+
+    <BookingForm id="modal" />
+  </div>
+</div>
+
+<style>
+  .bmodal {
+    position: fixed;
+    inset: 0;
+    z-index: 140;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 200ms var(--ease);
+  }
+
+  .bmodal[data-open] {
+    opacity: 1;
+  }
+
+  .bmodal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in oklab, var(--ink) 55%, transparent);
+    backdrop-filter: blur(6px);
+  }
+
+  .bmodal__panel {
+    position: relative;
+    width: min(680px, 100%);
+    max-height: min(92vh, 900px);
+    overflow-y: auto;
+    padding: clamp(28px, 4vw, 44px);
+    background: var(--paper);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-float);
+    transform: scale(0.98);
+    transition: transform 200ms var(--ease);
+  }
+
+  .bmodal[data-open] .bmodal__panel {
+    transform: none;
+  }
+
+  .bmodal__close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: var(--ink-soft);
+    border-radius: 50%;
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+
+  .bmodal__close:hover {
+    background: var(--ink-dim);
+    color: var(--ink);
+  }
+
+  .bmodal__title {
+    margin-top: 12px;
+  }
+
+  .bmodal__lead {
+    margin-top: 12px;
+    color: var(--ink-soft);
+    max-width: 52ch;
+  }
+
+  .bmodal__panel :global(.bform) {
+    margin-top: 28px;
+  }
+</style>
+
+<script>
+  import contentData from '../../client/content.json';
+
+  const content = contentData as any;
+
+  // ─── Маска телефона +7 (___) ___-__-__ ───────────────────────────
+  const maskPhone = (raw: string) => {
+    let digits = raw.replace(/\D/g, '');
+    if (digits.startsWith('8')) digits = '7' + digits.slice(1);
+    if (!digits.startsWith('7')) digits = '7' + digits;
+    digits = digits.slice(0, 11);
+
+    const rest = digits.slice(1);
+    let out = '+7';
+    if (rest.length) out += ` (${rest.slice(0, 3)}`;
+    if (rest.length >= 3) out += `) ${rest.slice(3, 6)}`;
+    if (rest.length >= 6) out += `-${rest.slice(6, 8)}`;
+    if (rest.length >= 8) out += `-${rest.slice(8, 10)}`;
+    return out;
+  };
+
+  const isPhoneComplete = (value: string) => value.replace(/\D/g, '').length === 11;
+
+  document.querySelectorAll<HTMLInputElement>('[data-phone-mask]').forEach((input) => {
+    input.addEventListener('input', () => {
+      if (!input.value) return;
+      input.value = maskPhone(input.value);
+      input.setAttribute('aria-invalid', String(!isPhoneComplete(input.value)));
+    });
+    input.addEventListener('focus', () => {
+      if (!input.value) input.value = '+7 (';
+    });
+    input.addEventListener('blur', () => {
+      if (input.value === '+7 (' || input.value === '+7') input.value = '';
+    });
+  });
+
+  // ─── Формы записи ────────────────────────────────────────────────
+  document.querySelectorAll<HTMLFormElement>('[data-booking-form]').forEach((form) => {
+    const consent = form.querySelector<HTMLInputElement>('[data-booking-consent]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-booking-submit]')!;
+    const status = form.querySelector<HTMLElement>('[data-booking-status]')!;
+    const statusTitle = form.querySelector<HTMLElement>('[data-booking-status-title]')!;
+    const statusText = form.querySelector<HTMLElement>('[data-booking-status-text]')!;
+    const nameInput = form.querySelector<HTMLInputElement>('input[name="name"]')!;
+    const phoneInput = form.querySelector<HTMLInputElement>('input[name="phone"]')!;
+
+    // Кнопка недоступна, пока не отмечено согласие (п. 3.3)
+    consent.addEventListener('change', () => {
+      submit.disabled = !consent.checked;
+    });
+
+    const showError = (input: HTMLInputElement, show: boolean) => {
+      const err = document.getElementById(input.getAttribute('aria-describedby') || '');
+      if (err) err.hidden = !show;
+      input.setAttribute('aria-invalid', String(show));
+    };
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Honeypot
+      if ((form.elements.namedItem('website') as HTMLInputElement)?.value) return;
+
+      const nameBad = !nameInput.value.trim();
+      const phoneBad = !isPhoneComplete(phoneInput.value);
+      showError(nameInput, nameBad);
+      showError(phoneInput, phoneBad);
+
+      if (nameBad || phoneBad) {
+        (nameBad ? nameInput : phoneInput).focus();
+        return;
+      }
+
+      // Демо-режим: боевая отправка идёт POST-запросом на серверный
+      // эндпоинт хостинга в РФ → Telegram-бот + дублирование на почту.
+      status.hidden = false;
+      status.removeAttribute('data-error');
+      statusTitle.textContent = content.form.success;
+      statusText.textContent = content.form.successText;
+
+      form.querySelectorAll<HTMLElement>('.bform__row, .field--check, .bform__submit, .bform__note')
+        .forEach((el) => (el.hidden = true));
+
+      status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+  });
+
+  // ─── Модалка ─────────────────────────────────────────────────────
+  const modal = document.querySelector<HTMLElement>('[data-booking-modal]');
+  const panel = document.querySelector<HTMLElement>('[data-booking-panel]');
+
+  if (modal && panel) {
+    let lastFocus: HTMLElement | null = null;
+
+    const focusables = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
+
+    const open = (trigger?: HTMLElement) => {
+      lastFocus = (trigger || document.activeElement) as HTMLElement;
+      modal.hidden = false;
+      requestAnimationFrame(() => modal.setAttribute('data-open', ''));
+      document.body.style.overflow = 'hidden';
+
+      // Предзаполняем услугу / врача / слот из того, что нажали
+      const select = panel.querySelector<HTMLSelectElement>('[data-booking-service]');
+      const time = panel.querySelector<HTMLInputElement>('[data-booking-time]');
+
+      if (select && trigger) {
+        const service = trigger.dataset.service;
+        const program = trigger.dataset.program;
+        if (service) select.value = `service:${service}`;
+        else if (program) select.value = `program:${program}`;
+      }
+
+      if (time && trigger?.dataset.slot) time.value = trigger.dataset.slot;
+
+      focusables()[0]?.focus();
+    };
+
+    const close = () => {
+      modal.removeAttribute('data-open');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modal.hidden = true;
+      }, 220);
+      lastFocus?.focus();
+    };
+
+    document.querySelectorAll<HTMLElement>('[data-book-open]').forEach((btn) =>
+      btn.addEventListener('click', () => open(btn))
+    );
+
+    // Клик по слоту в hero тоже открывает модалку с проставленным временем
+    document.querySelectorAll<HTMLElement>('[data-slot]').forEach((btn) =>
+      btn.addEventListener('click', () => open(btn))
+    );
+
+    modal.querySelectorAll<HTMLElement>('[data-booking-close]').forEach((el) =>
+      el.addEventListener('click', close)
+    );
+
+    // Focus trap + Esc (п. 12)
+    addEventListener('keydown', (e) => {
+      if (modal.hidden) return;
+
+      if (e.key === 'Escape') {
+        close();
+        return;
+      }
+
+      if (e.key !== 'Tab') return;
+
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  }
+</script>
