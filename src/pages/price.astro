@@ -34,8 +34,8 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
               <span class="ptable__note t-xs">{p.includes.join(' · ')}</span>
             </th>
             <td class="ptable__num data">{p.duration} мин</td>
-            <td class="ptable__num data data-price ptable__old">{fmt(p.priceOld)} ₽</td>
-            <td class="ptable__num data data-price ptable__price">{fmt(p.price)} ₽</td>
+            <td class="ptable__num data ptable__old">{fmt(p.priceOld)} ₽</td>
+            <td class="ptable__num data ptable__price">{fmt(p.price)} ₽</td>
           </tr>
         ))}
       </tbody>
@@ -67,7 +67,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
                 </th>
                 <td class="ptable__num data">{s.duration} мин</td>
                 <td class="ptable__num t-xs">{s.needsPrep ? 'Нужна' : '—'}</td>
-                <td class="ptable__num data data-price ptable__price">{fmt(s.price)} ₽</td>
+                <td class="ptable__num data ptable__price">{fmt(s.price)} ₽</td>
               </tr>
             ))}
         </tbody>
@@ -113,7 +113,7 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
     font-family: var(--font-data);
     font-size: 0.625rem;
     font-weight: 400;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--track-label);
     text-transform: uppercase;
     color: var(--ink-soft);
     text-align: left;

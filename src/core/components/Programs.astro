@@ -32,12 +32,12 @@ const fmt = (n: number) => n.toLocaleString('ru-RU').replace(/,/g, ' ');
             </div>
 
             <div class="prog__prices">
-              <p class="prog__price data data-price">
+              <p class="prog__price data">
                 {fmt(p.price)} <span class="prog__rub">₽</span>
               </p>
               <p class="prog__old">
-                <s class="data data-price">{fmt(p.priceOld)} ₽</s>
-                <span class="prog__save data data-price">−{fmt(p.priceOld - p.price)} ₽</span>
+                <s class="data">{fmt(p.priceOld)} ₽</s>
+                <span class="prog__save data">−{fmt(p.priceOld - p.price)} ₽</span>
               </p>
             </div>
 
