@@ -3,6 +3,13 @@ import content from '../../client/content.json';
 import BookingForm from './BookingForm.astro';
 
 const { contacts, clinic } = content;
+
+// Подписи на схеме проезда — из content.json, а не из разметки: смена бренда
+// не должна требовать правки компонента (см. /src/client/theme.css).
+// «г. Нижнекамск, проспект Химиков, 42» → улица «проспект Химиков» и дом «42».
+const addressParts = contacts.address.split(',').map((s) => s.trim());
+const mapStreet = addressParts.at(-2) ?? contacts.addressShort;
+const mapHouse = addressParts.at(-1) ?? '';
 ---
 
 <section class="section book" id="contacts">
@@ -82,10 +89,12 @@ const { contacts, clinic } = content;
             {/* Подписи — обычный HTML поверх схемы: берут шрифт и кегль из
                 токенов и говорят тем же языком «стеклянных» чипов, что и
                 остальные метки поверх изображений */}
-            <span class="book__map-street eyebrow decor">проспект Химиков</span>
+            <span class="book__map-street eyebrow decor">{mapStreet}</span>
+            {/* Метка называет здание, подпись выше — улицу: повторять название
+                проспекта дважды на схеме 600×340 незачем */}
             <span class="pill book__map-pin decor">
               <span class="book__map-pin-dot" aria-hidden="true"></span>
-              АЯЗ · {contacts.addressShort}
+              {clinic.name} · д. {mapHouse}
             </span>
           </div>
 
